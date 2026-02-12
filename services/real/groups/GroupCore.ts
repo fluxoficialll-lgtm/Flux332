@@ -5,6 +5,7 @@ import { authService } from '../../authService';
 import { API_BASE } from '../../../apiConfig';
 import { ValidationRules } from '../../../constants/ValidationRules';
 import { StructurePolicy } from '../../policy/StructurePolicy';
+import { PaymentProviderConfig } from '../../../types/groups.types';
 
 const API_URL = `${API_BASE}/api/groups`;
 
@@ -67,7 +68,6 @@ export const GroupCore = {
         const userId = authService.getCurrentUserId();
         if (userId) group.creatorId = userId;
         
-        // Validação de Preço Unificada
         if (group.isVip) {
             const price = parseFloat(group.price || '0');
             if (isNaN(price) || price < ValidationRules.MIN_VIP_PRICE) {
@@ -75,7 +75,6 @@ export const GroupCore = {
             }
         }
 
-        // Aplicação de política estrutural
         const normalizedGroup = StructurePolicy.applyExclusivity(group);
         normalizedGroup.updated_at = new Date().toISOString();
         normalizedGroup.timestamp = Date.now();
@@ -104,7 +103,6 @@ export const GroupCore = {
             }
         }
 
-        // Aplicação de política estrutural na atualização
         let mergedGroup = { ...existingGroup, ...group };
         mergedGroup = StructurePolicy.applyExclusivity(mergedGroup);
         mergedGroup.updated_at = new Date().toISOString();
@@ -123,6 +121,24 @@ export const GroupCore = {
             });
         } catch (e) {
             console.error("Server group update failed", e);
+        }
+    },
+
+    async updateGroupPaymentConfig(groupId: string, paymentConfig: PaymentProviderConfig) {
+        const group = db.groups.findById(groupId);
+        if (group) {
+            const updatedGroup = { ...group, paymentConfig, updated_at: new Date().toISOString() };
+            db.groups.update(updatedGroup);
+
+            try {
+                await fetch(`${API_URL}/${groupId}/payment-config`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(paymentConfig)
+                });
+            } catch (e) {
+                console.error("Server group payment config update failed", e);
+            }
         }
     },
 

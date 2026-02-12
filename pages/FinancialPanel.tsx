@@ -6,8 +6,8 @@ import { AffiliateStats } from '../types';
 import { BalanceCard, CurrencyCode } from '../components/financial/BalanceCard';
 import { AffiliateCard } from '../components/financial/AffiliateCard';
 import { GatewayCard } from '../components/financial/GatewayCard';
-import CashFlowChart from '../components/financial/CashFlowChart';
-import TransactionHistoryCard from '../components/financial/TransactionHistoryCard';
+import { CashFlowCard } from '../components/financial/CashFlowCard';
+import { TransactionsCard } from '../components/financial/TransactionsCard';
 
 export const FinancialPanel: React.FC = () => {
   const navigate = useNavigate();
@@ -163,9 +163,9 @@ export const FinancialPanel: React.FC = () => {
             showCurrencySwitch={preferredProvider !== 'syncpay'}
         />
         
-        <CashFlowChart />
+        <CashFlowCard />
 
-        <TransactionHistoryCard />
+        <TransactionsCard />
 
         {activeProviderName && <AffiliateCard affiliateStats={affiliateStats} pixelId={pixelId} setPixelId={setPixelId} pixelToken={pixelToken} setPixelToken={setPixelToken} isSavingMarketing={isSavingMarketing} onSaveMarketing={() => {}} onCopyAffiliateLink={() => {}} isCopyingLink={isCopyingLink} onOpenTracking={() => {}} />}
         <GatewayCard 

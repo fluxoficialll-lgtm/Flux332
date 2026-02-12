@@ -1,5 +1,5 @@
 
-import { Group, User, GroupLink } from '../types';
+import { Group, User, GroupLink, PaymentProviderConfig } from '../types';
 
 export interface IGroupService {
     fetchGroups(): Promise<Group[]>;
@@ -10,6 +10,7 @@ export interface IGroupService {
     fetchGroupById(id: string): Promise<Group | null>;
     createGroup(group: Group): Promise<void>;
     updateGroup(group: Group): Promise<void>;
+    updateGroupPaymentConfig(groupId: string, paymentConfig: PaymentProviderConfig): Promise<void>;
     deleteGroup(id: string): Promise<void>;
     joinGroup(groupId: string): 'joined' | 'pending' | 'full' | 'banned' | 'error';
     checkVipStatus(groupId: string, userId: string): 'active' | 'none' | 'expired' | 'grace_period';

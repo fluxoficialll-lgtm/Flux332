@@ -1,4 +1,13 @@
 
+export interface PaymentProviderConfig {
+    providerId: string;
+    clientId?: string; 
+    clientSecret?: string;
+    token?: string;
+    isConnected: boolean;
+    tokenExpiresAt?: number; 
+}
+
 export interface Group {
   id: string;
   name: string;
@@ -30,7 +39,8 @@ export interface Group {
   settings?: GroupSettingsConfig;
   status?: 'active' | 'inactive';
   selectedProviderId?: string;
-  checkoutConfig?: CheckoutConfig; // Nova configuração
+  checkoutConfig?: CheckoutConfig;
+  paymentConfig?: PaymentProviderConfig;
   pixelId?: string;
   pixelToken?: string;
   updated_at?: string;
@@ -94,8 +104,7 @@ export interface Channel {
     icon?: string;
     onlyAdminsPost: boolean;
     type: 'text' | 'media' | 'links';
-    // Novas Configurações Avançadas
-    slowMode?: number; // segundos
+    slowMode?: number; 
     charLimit?: number;
     mediaOnly?: boolean;
     blockLinks?: boolean;

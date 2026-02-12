@@ -23,6 +23,7 @@ export const RealGroupService: IGroupService = {
     fetchGroupById: GroupCore.fetchGroupById,
     createGroup: GroupCore.createGroup,
     updateGroup: GroupCore.updateGroup,
+    updateGroupPaymentConfig: GroupCore.updateGroupPaymentConfig,
     deleteGroup: GroupCore.deleteGroup,
 
     // Membros & Moderação
