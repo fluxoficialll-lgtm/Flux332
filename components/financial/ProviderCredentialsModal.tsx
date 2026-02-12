@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface CredentialsModalProps {
     isOpen: boolean;
@@ -7,12 +7,22 @@ interface CredentialsModalProps {
     providerId: string | null;
     providerName: string;
     onConnect: (credentials: any) => Promise<void>;
+    onDisconnect: () => Promise<void>;
+    existingConfig: any;
 }
 
-export const ProviderCredentialsModal: React.FC<CredentialsModalProps> = ({ isOpen, onClose, providerId, providerName, onConnect }) => {
+export const ProviderCredentialsModal: React.FC<CredentialsModalProps> = ({ isOpen, onClose, providerId, providerName, onConnect, onDisconnect, existingConfig }) => {
     const [credentials, setCredentials] = useState<any>({});
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (existingConfig) {
+            setCredentials(existingConfig);
+        } else {
+            setCredentials({});
+        }
+    }, [existingConfig, isOpen]);
 
     const handleCredentialChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setCredentials({
@@ -29,7 +39,20 @@ export const ProviderCredentialsModal: React.FC<CredentialsModalProps> = ({ isOp
             await onConnect(credentials);
             onClose();
         } catch (err: any) {
-            setError(err.message || "Falha ao conectar. Verifique suas credenciais.");
+            setError(err.message || "Falha ao salvar. Verifique suas credenciais.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    const handleDisconnect = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            await onDisconnect();
+            onClose();
+        } catch (err: any) {
+            setError(err.message || "Falha ao desconectar.");
         } finally {
             setIsLoading(false);
         }
@@ -41,32 +64,32 @@ export const ProviderCredentialsModal: React.FC<CredentialsModalProps> = ({ isOp
                 return (
                     <>
                         <div className="input-group">
-                            <label htmlFor="clientId">Client ID</label>
-                            <input type="text" id="clientId" name="clientId" onChange={handleCredentialChange} />
+                            <label htmlFor="publicKey">Chave Pública</label>
+                            <input type="text" id="publicKey" name="publicKey" value={credentials.publicKey || ''} onChange={handleCredentialChange} />
                         </div>
                         <div className="input-group">
-                            <label htmlFor="clientSecret">Client Secret</label>
-                            <input type="password" id="clientSecret" name="clientSecret" onChange={handleCredentialChange} />
+                            <label htmlFor="privateKey">Chave Privada</label>
+                            <input type="password" id="privateKey" name="privateKey" value={credentials.privateKey || ''} onChange={handleCredentialChange} />
                         </div>
                     </>
                 );
             case 'stripe':
                 return (
                     <div className="input-group">
-                        <label htmlFor="secretKey">Secret Key</label>
-                        <input type="password" id="secretKey" name="secretKey" onChange={handleCredentialChange} />
+                        <label htmlFor="secretKey">Chave Secreta</label>
+                        <input type="password" id="secretKey" name="secretKey" value={credentials.secretKey || ''} onChange={handleCredentialChange} />
                     </div>
                 );
             case 'paypal':
                 return (
                     <>
                         <div className="input-group">
-                            <label htmlFor="clientId">Client ID</label>
-                            <input type="text" id="clientId" name="clientId" onChange={handleCredentialChange} />
+                            <label htmlFor="credentials">Client ID</label>
+                            <input type="text" id="credentials" name="credentials" value={credentials.credentials || ''} onChange={handleCredentialChange} />
                         </div>
                         <div className="input-group">
-                            <label htmlFor="clientSecret">Client Secret</label>
-                            <input type="password" id="clientSecret" name="clientSecret" onChange={handleCredentialChange} />
+                            <label htmlFor="secretKey">Chave Secreta</label>
+                            <input type="password" id="secretKey" name="secretKey" value={credentials.secretKey || ''} onChange={handleCredentialChange} />
                         </div>
                     </>
                 );
@@ -81,13 +104,20 @@ export const ProviderCredentialsModal: React.FC<CredentialsModalProps> = ({ isOp
         <div className="modal-overlay">
             <div className="modal-content">
                 <button className="close-button" onClick={onClose}>&times;</button>
-                <h2>Conectar com {providerName}</h2>
+                <h2>{existingConfig?.isConnected ? 'Atualizar' : 'Conectar'} {providerName}</h2>
                 <form onSubmit={handleSubmit}>
                     {renderFields()}
                     {error && <p className="error-message">{error}</p>}
-                    <button type="submit" className="connect-button" disabled={isLoading}>
-                        {isLoading ? 'Conectando...' : 'Conectar'}
-                    </button>
+                    <div className="form-actions">
+                        {existingConfig?.isConnected && (
+                            <button type="button" className="disconnect-button" onClick={handleDisconnect} disabled={isLoading}>
+                                {isLoading ? 'Desconectando...' : 'Desconectar'}
+                            </button>
+                        )}
+                        <button type="submit" className="connect-button" disabled={isLoading}>
+                            {isLoading ? 'Salvando...' : 'Salvar Credenciais'}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
