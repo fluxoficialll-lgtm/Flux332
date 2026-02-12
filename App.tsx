@@ -4,7 +4,7 @@ import { HashRouter } from 'react-router-dom';
 import { ModalProvider } from './components/ModalSystem';
 import { GlobalTracker } from './components/layout/GlobalTracker';
 import { DeepLinkHandler } from './components/layout/DeepLinkHandler';
-import { AppRoutes } from './routes/AppRoutes';
+import AppRoutes from './routes/AppRoutes';
 import { useAuthSync } from './hooks/useAuthSync';
 import { USE_MOCKS } from './mocks';
 import { GlobalErrorBoundary } from './components/GlobalErrorBoundary';
@@ -82,7 +82,7 @@ const App: React.FC = () => {
     
     initializeApp();
     return () => unsub();
-  }, [isReady]);
+  }, []);
 
   if (!isReady || (!isHydrated && !USE_MOCKS)) {
     return (

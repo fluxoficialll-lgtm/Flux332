@@ -46,5 +46,10 @@ export const paypalService = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ orderId, ownerEmail })
         });
+    },
+
+    disconnect: async (): Promise<boolean> => {
+        await safeFetch(`${PROXY_BASE}/disconnect`, { method: 'POST' });
+        return true;
     }
 };

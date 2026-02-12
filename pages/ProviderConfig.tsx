@@ -6,6 +6,9 @@ import { SyncPayForm } from '../components/payments/providers/SyncPayForm';
 import { StripeForm } from '../components/payments/providers/StripeForm';
 import { PayPalForm } from '../components/payments/providers/PayPalForm';
 import ProviderSettingsModal from '../components/financial/ProviderSettingsModal';
+import { paypalService } from '../services/paypalService';
+import { stripeService } from '../services/stripeService';
+import { syncPayService } from '../services/syncPayService';
 
 interface ProviderData {
     id: string;
@@ -125,6 +128,47 @@ export const ProviderConfig: React.FC = () => {
       setSelectedProvider(providerId);
       setIsModalOpen(true);
   };
+
+  const handleManageCredentials = () => {
+      if (!selectedProvider) return;
+      setExpanded(selectedProvider);
+      setIsModalOpen(false);
+  };
+
+  const handleDisconnect = async () => {
+      if (!selectedProvider) return;
+
+      try {
+          let success = false;
+          switch (selectedProvider) {
+              case 'paypal':
+                  success = await paypalService.disconnect();
+                  break;
+              case 'stripe':
+                  success = await stripeService.disconnect();
+                  break;
+              case 'syncpay':
+                  success = await syncPayService.disconnect();
+                  break;
+              default:
+                  console.error('Provedor desconhecido para desconexão:', selectedProvider);
+                  return;
+          }
+
+          if (success) {
+              handleStatusChange(selectedProvider, false);
+          }
+      } catch (error) {
+          console.error(`Erro ao desconectar ${selectedProvider}:`, error);
+      } finally {
+          setIsModalOpen(false);
+      }
+  };
+
+  const selectedProviderData = useMemo(() => {
+    if (!selectedProvider) return null;
+    return providers.find(p => p.id === selectedProvider);
+  }, [selectedProvider, providers]);
 
   const connectedList = providers.filter(p => connectedProviders.has(p.id));
   const disconnectedList = providers.filter(p => !connectedProviders.has(p.id));
@@ -296,15 +340,10 @@ export const ProviderConfig: React.FC = () => {
       <ProviderSettingsModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onUpdate={() => { /* Lógica de atualização */ }}
-        onSave={() => { /* Lógica de salvar */ }}
-        onDelete={() => { /* Lógica de apagar */ }}
-        onDisconnect={() => { 
-            if(selectedProvider) {
-                handleStatusChange(selectedProvider, false);
-                setIsModalOpen(false);
-            }
-         }}
+        providerName={selectedProviderData?.name || ''}
+        isConnected={selectedProvider ? connectedProviders.has(selectedProvider) : false}
+        onManageCredentials={handleManageCredentials}
+        onDisconnect={handleDisconnect}
       />
     </div>
   );

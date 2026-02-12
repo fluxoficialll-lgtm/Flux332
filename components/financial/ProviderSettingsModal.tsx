@@ -1,14 +1,23 @@
+
 import React from 'react';
 
 interface ProviderSettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onUpdate: () => void;
+    onManageCredentials: () => void;
     onDisconnect: () => Promise<void>;
     providerName: string;
+    isConnected: boolean;
 }
 
-const ProviderSettingsModal: React.FC<ProviderSettingsModalProps> = ({ isOpen, onClose, onUpdate, onDisconnect, providerName }) => {
+const ProviderSettingsModal: React.FC<ProviderSettingsModalProps> = ({ 
+    isOpen, 
+    onClose, 
+    onManageCredentials, 
+    onDisconnect, 
+    providerName, 
+    isConnected 
+}) => {
     if (!isOpen) return null;
 
     return (
@@ -21,18 +30,29 @@ const ProviderSettingsModal: React.FC<ProviderSettingsModalProps> = ({ isOpen, o
                 <p className="text-xs text-white/40 mb-6">O que você gostaria de fazer?</p>
                 
                 <div className="flex flex-col space-y-2">
-                    <button 
-                        onClick={onUpdate} 
-                        className="text-left w-full px-4 py-3 text-sm font-semibold text-white/80 hover:bg-white/5 rounded-lg transition-colors"
-                    >
-                        Atualizar Credenciais
-                    </button>
-                    <button 
-                        onClick={onDisconnect} 
-                        className="text-left w-full px-4 py-3 text-sm font-semibold text-[#ff4d4d] hover:bg-red-500/10 rounded-lg transition-colors"
-                    >
-                        Desconectar
-                    </button>
+                    {isConnected ? (
+                        <>
+                            <button 
+                                onClick={onManageCredentials} 
+                                className="text-left w-full px-4 py-3 text-sm font-semibold text-white/80 hover:bg-white/5 rounded-lg transition-colors"
+                            >
+                                Atualizar Credencial
+                            </button>
+                            <button 
+                                onClick={onDisconnect} 
+                                className="text-left w-full px-4 py-3 text-sm font-semibold text-[#ff4d4d] hover:bg-red-500/10 rounded-lg transition-colors"
+                            >
+                                Desconectar
+                            </button>
+                        </>
+                    ) : (
+                        <button 
+                            onClick={onManageCredentials} 
+                            className="text-left w-full px-4 py-3 text-sm font-semibold text-white/80 hover:bg-white/5 rounded-lg transition-colors"
+                        >
+                            Inserir Credencial
+                        </button>
+                    )}
                 </div>
                 
                 <button 

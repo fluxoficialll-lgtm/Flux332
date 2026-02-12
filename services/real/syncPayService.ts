@@ -126,5 +126,10 @@ export const syncPayService = {
             headers: { 'Content-Type': 'application/json' }, 
             body: JSON.stringify({ amount, pix_key: pixKey, pix_key_type: pixKeyType })
         });
+    },
+    
+    disconnect: async (): Promise<boolean> => {
+        await safeFetch(`${PROXY_BASE}/disconnect`, { method: 'POST' });
+        return true;
     }
 };

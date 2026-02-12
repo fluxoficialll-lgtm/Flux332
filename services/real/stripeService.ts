@@ -79,5 +79,15 @@ export const stripeService = {
 
         if (!response.success) throw new Error(response.error);
         return response.data;
+    },
+
+    disconnect: async (): Promise<boolean> => {
+        const response = await connectionHub.gateways.request<any>(
+            `${PROXY_BASE}/disconnect`,
+            { method: 'POST' },
+            'Stripe'
+        );
+        if (!response.success) throw new Error(response.error);
+        return true;
     }
 };
