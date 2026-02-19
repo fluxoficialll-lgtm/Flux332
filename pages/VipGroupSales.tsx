@@ -6,13 +6,13 @@ import { useAutoLanguage } from '../hooks/useAutoLanguage';
 import { vipSalesTracker } from '../ServiçosDoFrontend/pixel/trackers/VipSalesTracker';
 
 // UI Components
-import { VipSalesHeader } from '../Componentes/vip/VipSalesHeader';
-import { VipSalesPriceBadge } from '../Componentes/vip/VipSalesPriceBadge';
-import { VipGallery } from '../Componentes/vip/VipGallery';
-import { VipCopy } from '../Componentes/vip/VipCopy';
-import { VipCheckout } from '../Componentes/vip/VipCheckout';
-import { VipSalesModals } from '../Componentes/vip/VipSalesModals';
-import { VipSalesMediaZoom } from '../Componentes/vip/VipSalesMediaZoom';
+import { VipSalesHeader } from '../Componentes/ComponentesDePaginasDeVendas/VipSalesHeader';
+import { VipSalesPriceBadge } from '../Componentes/ComponentesDePaginasDeVendas/VipSalesPriceBadge';
+import { VipGallery } from '../Componentes/ComponentesDePaginasDeVendas/VipGallery';
+import { VipCopy } from '../Componentes/ComponentesDePaginasDeVendas/VipCopy';
+import { VipCheckout } from '../Componentes/ComponentesDePaginasDeVendas/VipCheckout';
+import { VipSalesModals } from '../Componentes/ComponentesDePaginasDeVendas/VipSalesModals';
+import { VipSalesMediaZoom } from '../Componentes/ComponentesDePaginasDeVendas/VipSalesMediaZoom';
 
 export const VipGroupSales: React.FC = () => {
   const { id } = useParams<{ id: string }>();

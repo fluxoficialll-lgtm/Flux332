@@ -9,19 +9,19 @@ import { Group } from '../../types';
 import { USE_MOCKS } from '../../mocks';
 
 // Sub-views Internas
-import { StripePixView } from './stripe/StripePixView';
-import { StripeCardForm } from './stripe/StripeCardForm';
-import { StripeOxxoView } from './stripe/StripeOxxoView';
-import { StripeSepaForm } from './stripe/StripeSepaForm';
-import { StripeBoletoView } from './stripe/StripeBoletoView';
-import { StripeBacsForm } from './stripe/StripeBacsForm';
-import { StripeUpiView } from './stripe/StripeUpiView';
-import { StripeKonbiniView } from './stripe/StripeKonbiniView';
-import { StripePayNowView } from './stripe/StripePayNowView';
-import { StripeAchForm } from './stripe/StripeAchForm';
-import { StripeInteracView } from './stripe/StripeInteracView';
-import { StripeBecsForm } from './stripe/StripeBecsForm';
-import { StripePadForm } from './stripe/StripePadForm';
+import { StripePixView } from './CardsMétodosDePagamentos/StripePixView';
+import { StripeCardForm } from './CardsMétodosDePagamentos/StripeCardForm';
+import { StripeOxxoView } from './CardsMétodosDePagamentos/StripeOxxoView';
+import { StripeSepaForm } from './CardsMétodosDePagamentos/StripeSepaForm';
+import { StripeBoletoView } from './CardsMétodosDePagamentos/StripeBoletoView';
+import { StripeBacsForm } from './CardsMétodosDePagamentos/StripeBacsForm';
+import { StripeUpiView } from './CardsMétodosDePagamentos/StripeUpiView';
+import { StripeKonbiniView } from './CardsMétodosDePagamentos/StripeKonbiniView';
+import { StripePayNowView } from './CardsMétodosDePagamentos/StripePayNowView';
+import { StripeAchForm } from './CardsMétodosDePagamentos/StripeAchForm';
+import { StripeInteracView } from './CardsMétodosDePagamentos/StripeInteracView';
+import { StripeBecsForm } from './CardsMétodosDePagamentos/StripeBecsForm';
+import { StripePadForm } from './CardsMétodosDePagamentos/StripePadForm';
 
 import { RedirectionBridgeCard, RedirectionProvider } from './RedirectionBridgeCard';
 
