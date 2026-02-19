@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { syncPayService } from '../../../ServiçosDoFrontend/syncPayService';
+import { syncPayService } from '../../../ServiçosDoFrontend/ServiçosDeProvedores/syncPayService';
 import { authService } from '../../../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
 import { PaymentProviderConfig } from '../../../types';
 

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { stripeService } from '../../ServiçosDoFrontend/stripeService';
+import { stripeService } from '../../ServiçosDoFrontend/ServiçosDeProvedores/stripeService';
 import { authService } from '../../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
 import { GeoData } from '../../ServiçosDoFrontend/geoService';
 import { ConversionResult } from '../../ServiçosDoFrontend/currencyService';

@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { groupService } from '../ServiçosDoFrontend/groupService';
-import { paypalService } from '../ServiçosDoFrontend/paypalService';
-import { stripeService } from '../ServiçosDoFrontend/stripeService';
-import { syncPayService } from '../ServiçosDoFrontend/syncPayService';
+import { paypalService } from '../ServiçosDoFrontend/ServiçosDeProvedores/paypalService';
+import { stripeService } from '../ServiçosDoFrontend/ServiçosDeProvedores/stripeService';
+import { syncPayService } from '../ServiçosDoFrontend/ServiçosDeProvedores/syncPayService';
 import { Group } from '../types';
 import { SyncPayCard } from '../Componentes/financial/provider_cards_connection/SyncPayCard';
 import { StripeCard } from '../Componentes/financial/provider_cards_connection/StripeCard';

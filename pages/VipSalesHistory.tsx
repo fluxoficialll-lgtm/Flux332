@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
 import { groupService } from '../ServiçosDoFrontend/groupService';
-import { syncPayService } from '../ServiçosDoFrontend/syncPayService';
+import { syncPayService } from '../ServiçosDoFrontend/ServiçosDeProvedores/syncPayService';
 
 export const VipSalesHistory: React.FC = () => {
   const navigate = useNavigate();

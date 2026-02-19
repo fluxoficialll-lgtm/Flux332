@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
-import { syncPayService } from '../ServiçosDoFrontend/syncPayService';
+import { syncPayService } from '../ServiçosDoFrontend/ServiçosDeProvedores/syncPayService';
 import { AffiliateStats } from '../types';
 import { BalanceCard, CurrencyCode } from '../Componentes/financial/BalanceCard';
 import { AffiliateCard } from '../Componentes/financial/AffiliateCard';

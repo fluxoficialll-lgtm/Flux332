@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { paypalService } from '../../ServiçosDoFrontend/paypalService';
+import { paypalService } from '../../ServiçosDoFrontend/ServiçosDeProvedores/paypalService';
 import { authService } from '../../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
 import { metaPixelService } from '../../ServiçosDoFrontend/metaPixelService';
 import { Group } from '../../types';

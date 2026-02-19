@@ -1,5 +1,5 @@
 
-import { syncPayService } from '../../syncPayService';
+import { syncPayService } from '../../ServiçosDeProvedores/syncPayService';
 import { adService } from '../../adService';
 import { marketplaceService } from '../../marketplaceService';
 import { authService } from '../../ServiçosDeAutenticacao/authService';

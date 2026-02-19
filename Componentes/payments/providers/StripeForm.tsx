@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { stripeService } from '../../../ServiçosDoFrontend/stripeService';
+import { stripeService } from '../../../ServiçosDoFrontend/ServiçosDeProvedores/stripeService';
 import { authService } from '../../../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
 import { PaymentProviderConfig } from '../../../types';
 
