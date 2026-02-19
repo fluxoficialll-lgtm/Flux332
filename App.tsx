@@ -8,7 +8,7 @@ import AppRoutes from './routes/AppRoutes';
 import { useAuthSync } from './hooks/useAuthSync';
 import { USE_MOCKS } from './mocks';
 import { GlobalErrorBoundary } from './Componentes/GlobalErrorBoundary';
-import { configControl } from './ServiçosDoFrontend/admin/ConfigControl';
+import { configControl } from './ServiçosDoFrontend/ServiçoDeAdmin/ConfigControl';
 import { Maintenance } from './pages/Maintenance';
 import { hydrationManager } from './ServiçosDoFrontend/sync/HydrationManager';
 

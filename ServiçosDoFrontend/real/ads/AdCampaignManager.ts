@@ -1,10 +1,9 @@
-
 import { AdCampaign } from '../../../types';
 import { db } from '@/database';
 import { authService } from '../../authService';
 import { API_BASE } from '../../../apiConfig';
-import { ConversionHub } from '../../ads/attribution/ConversionHub';
-import { FeedbackOptimizer } from '../../ads/intelligence/FeedbackOptimizer';
+import { ConversionHub } from '../../ServiçoDeAds/attribution/ConversionHub';
+import { FeedbackOptimizer } from '../../ServiçoDeAds/intelligence/FeedbackOptimizer';
 
 const API_URL = `${API_BASE}/api/ads`;
 

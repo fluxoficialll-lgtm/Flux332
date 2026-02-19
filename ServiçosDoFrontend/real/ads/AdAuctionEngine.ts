@@ -1,7 +1,7 @@
 import { Post, MarketplaceItem, AdCampaign } from '../../../types';
 import { db } from '@/database';
 import { authService } from '../../authService';
-import { adAuctionEngine as InternalEngine } from '../../ads/engine/AdAuctionEngine';
+import { adAuctionEngine as InternalEngine } from '../../ServiçoDeAds/engine/AdAuctionEngine';
 import { AdCampaignManager } from './AdCampaignManager';
 
 export const AdAuctionEngine = {
