@@ -1,142 +1,141 @@
 
 import { query } from '../pool.js';
-// Importando o logger para obter visibilidade na camada de acesso ao banco de dados.
-import { LogDeOperacoes } from '../../ServiçosBackEnd/ServiçosDeLogsSofisticados/LogDeOperacoes.js';
 
 const toUuid = (val) => (val === "" || val === "undefined" || val === "null") ? null : val;
 
+// Mapeia uma linha do banco de dados para o formato de objeto User
 const mapRowToUser = (row) => {
     if (!row) return null;
-    const metadata = typeof row.data === 'string' ? JSON.parse(row.data) : (row.data || {});
-    
     return {
-        ...metadata,
         id: row.id,
+        name: row.name,
+        username: row.username,
         email: row.email,
-        handle: row.handle,
-        googleId: row.google_id,
-        walletBalance: parseFloat(row.wallet_balance || 0),
-        isBanned: row.is_banned,
-        isProfileCompleted: row.is_profile_completed,
-        trustScore: row.trust_score,
-        strikes: row.strikes,
-        referredById: row.referred_by_id,
+        dateOfBirth: row.date_of_birth,
         createdAt: row.created_at
+        // Campos como password_hash são omitidos por segurança
     };
 };
 
 export const UserRepository = {
+    /**
+     * Encontra um usuário pelo email.
+     * @param {string} email - O email do usuário.
+     * @returns {object|null} O usuário encontrado ou nulo.
+     */
     async findByEmail(email) {
         if (!email) return null;
-        const res = await query('SELECT * FROM users WHERE email = $1', [email.toLowerCase().trim()]);
-        // Logar quando um usuário não é encontrado pode ser útil para depurar problemas de lógica.
-        if (!res.rows[0]) {
-            LogDeOperacoes.log('DB_USER_FIND_BY_EMAIL_NOT_FOUND', { email });
+        const sql = 'SELECT * FROM users WHERE email = $1';
+        const res = await query(sql, [email.toLowerCase().trim()]);
+        if (res.rows[0]) {
+            console.log(`[PostgreSQL] User with email ${email} was read from the database.`);
         }
         return mapRowToUser(res.rows[0]);
     },
 
-    async findByHandle(handle) {
-        if (!handle) return null;
-        const res = await query('SELECT * FROM users WHERE handle = $1', [handle.toLowerCase().trim()]);
-        if (!res.rows[0]) {
-            LogDeOperacoes.log('DB_USER_FIND_BY_HANDLE_NOT_FOUND', { handle });
+    /**
+     * Encontra um usuário pelo username (antigo handle).
+     * @param {string} username - O username do usuário.
+     * @returns {object|null} O usuário encontrado ou nulo.
+     */
+    async findByUsername(username) {
+        if (!username) return null;
+        const sql = 'SELECT * FROM users WHERE username = $1';
+        const res = await query(sql, [username.toLowerCase().trim()]);
+        if (res.rows[0]) {
+            console.log(`[PostgreSQL] User with username ${username} was read from the database.`);
         }
         return mapRowToUser(res.rows[0]);
     },
 
+    /**
+     * Encontra um usuário pelo ID.
+     * @param {string} id - O ID do usuário.
+     * @returns {object|null} O usuário encontrado ou nulo.
+     */
     async findById(id) {
         const uuid = toUuid(id);
         if (!uuid) return null;
-        const res = await query('SELECT * FROM users WHERE id = $1', [uuid]);
-        if (!res.rows[0]) {
-            LogDeOperacoes.log('DB_USER_FIND_BY_ID_NOT_FOUND', { id: uuid });
+        const sql = 'SELECT * FROM users WHERE id = $1';
+        const res = await query(sql, [uuid]);
+        if (res.rows[0]) {
+            console.log(`[PostgreSQL] User with ID ${id} was read from the database.`);
         }
         return mapRowToUser(res.rows[0]);
     },
 
-    async findByGoogleId(googleId) {
-        if (!googleId) return null;
-        const res = await query('SELECT * FROM users WHERE google_id = $1', [googleId]);
-        return mapRowToUser(res.rows[0]);
-    },
-
+    /**
+     * Cria um novo usuário no banco de dados.
+     * @param {object} user - O objeto do usuário a ser criado.
+     * @returns {string} O ID do novo usuário.
+     */
     async create(user) {
-        const { email, password, googleId, referredById, profile, ...otherData } = user;
-        LogDeOperacoes.log('DB_USER_CREATE_ATTEMPT', { email, hasGoogleId: !!googleId });
-
-        try {
-            const handle = profile?.name?.toLowerCase().trim();
-            const metadata = { ...otherData, profile };
-
-            const res = await query(
-                `INSERT INTO users (email, password, handle, google_id, referred_by_id, data, is_profile_completed) 
-                 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-                [
-                    email.toLowerCase().trim(), 
-                    password, 
-                    handle || null, 
-                    googleId || null, 
-                    toUuid(referredById), 
-                    JSON.stringify(metadata),
-                    !!user.isProfileCompleted
-                ]
-            );
-            const newUserId = res.rows[0].id;
-            LogDeOperacoes.log('DB_USER_CREATE_SUCCESS', { userId: newUserId, email });
-            return newUserId;
-        } catch (dbError) {
-            LogDeOperacoes.error('DB_USER_CREATE_FAILURE', { email, error: dbError.message, stack: dbError.stack });
-            throw dbError; // Relança o erro para a camada de serviço/rota tratar.
-        }
+        const { name, username, email, passwordHash, dateOfBirth } = user;
+        const sql = `
+            INSERT INTO users (name, username, email, password_hash, date_of_birth)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id;
+        `;
+        const params = [name, username, email.toLowerCase().trim(), passwordHash, dateOfBirth];
+        const res = await query(sql, params);
+        const newUserId = res.rows[0].id;
+        console.log(`[PostgreSQL] User successfully inserted with ID: ${newUserId}`);
+        return newUserId;
     },
 
+    /**
+     * Atualiza os dados de um usuário.
+     * @param {object} user - O objeto do usuário com os campos a serem atualizados.
+     * @returns {boolean} True se a atualização foi bem-sucedida.
+     */
     async update(user) {
-        const { id, handle, walletBalance, isBanned, strikes, trustScore, isProfileCompleted, ...metadata } = user;
+        const { id, name, username, email, passwordHash, dateOfBirth } = user;
         const uuid = toUuid(id);
-        
-        if (!uuid) {
-            const errorMsg = 'Update failed: Invalid or missing user ID.';
-            LogDeOperacoes.error('DB_USER_UPDATE_FAILURE', { reason: errorMsg, userAttempt: user });
-            throw new Error(errorMsg);
+        if (!uuid) throw new Error('Update failed: Invalid or missing user ID.');
+
+        const sql = `
+            UPDATE users SET 
+                name = COALESCE($1, name),
+                username = COALESCE($2, username),
+                email = COALESCE($3, email),
+                password_hash = COALESCE($4, password_hash),
+                date_of_birth = COALESCE($5, date_of_birth)
+            WHERE id = $6
+        `;
+        const params = [name, username, email, passwordHash, dateOfBirth, uuid];
+        const res = await query(sql, params);
+        if (res.rowCount > 0) {
+            console.log(`[PostgreSQL] User with ID ${uuid} was successfully updated.`);
         }
-
-        LogDeOperacoes.log('DB_USER_UPDATE_ATTEMPT', { userId: uuid, fieldsToUpdate: Object.keys(user) });
-
-        try {
-            const sql = `
-                UPDATE users SET 
-                    handle = COALESCE($1, handle),
-                    wallet_balance = COALESCE($2, wallet_balance),
-                    is_banned = COALESCE($3, is_banned),
-                    strikes = COALESCE($4, strikes),
-                    trust_score = COALESCE($5, trust_score),
-                    is_profile_completed = COALESCE($6, is_profile_completed),
-                    data = data || $7::jsonb
-                WHERE id = $8
-            `;
-
-            await query(sql, [
-                handle || null,
-                walletBalance !== undefined ? parseFloat(walletBalance) : null,
-                isBanned !== undefined ? isBanned : null,
-                strikes !== undefined ? parseInt(strikes) : null,
-                trustScore !== undefined ? parseInt(trustScore) : null,
-                isProfileCompleted !== undefined ? isProfileCompleted : null,
-                JSON.stringify(metadata),
-                uuid
-            ]);
-
-            LogDeOperacoes.log('DB_USER_UPDATE_SUCCESS', { userId: uuid });
-            return true;
-        } catch (dbError) {
-            LogDeOperacoes.error('DB_USER_UPDATE_FAILURE', { userId: uuid, error: dbError.message, stack: dbError.stack });
-            throw dbError; // Relança o erro.
-        }
+        return res.rowCount > 0;
     },
 
+    /**
+     * Apaga um usuário do banco de dados.
+     * @param {string} id - O ID do usuário a ser apagado.
+     * @returns {boolean} True se o usuário foi apagado com sucesso.
+     */
+    async delete(id) {
+        const uuid = toUuid(id);
+        if (!uuid) return false;
+
+        const sql = 'DELETE FROM users WHERE id = $1';
+        const res = await query(sql, [uuid]);
+
+        if (res.rowCount > 0) {
+            console.log(`[PostgreSQL] User with ID: ${id} successfully deleted.`);
+        }
+        return res.rowCount > 0;
+    },
+
+    /**
+     * Lista todos os usuários.
+     * @returns {Array<object>} Uma lista de usuários.
+     */
     async getAll() {
-        const res = await query('SELECT * FROM users ORDER BY created_at DESC LIMIT 1000');
+        const sql = 'SELECT * FROM users ORDER BY created_at DESC LIMIT 1000';
+        const res = await query(sql);
+        console.log(`[PostgreSQL] ${res.rowCount} users read from the database.`);
         return res.rows.map(mapRowToUser);
     }
 };
