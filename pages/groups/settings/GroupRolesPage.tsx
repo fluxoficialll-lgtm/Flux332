@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useGroupSettings } from '../../../Componentes/ComponentesDeGroups/hooks/useGroupSettings';
 import { GroupRole } from '../../../types';
 import { useModal } from '../../../Componentes/ModalSystem';
-import { RoleListItem } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/roles/RoleListItem';
-import { RoleEditor } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/roles/RoleEditor';
+import { RoleListItem } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/roles/RoleListItem';
+import { RoleEditor } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/roles/RoleEditor';
 
 export const GroupRolesPage: React.FC = () => {
     const navigate = useNavigate();

@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useGroupSettings } from '../../../Componentes/ComponentesDeGroups/hooks/useGroupSettings';
-import { VipMonetizationSection } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/VipMonetizationSection';
+import { VipMonetizationSection } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/VipMonetizationSection';
 import { PixelSettingsModal } from '../../../Componentes/groups/PixelSettingsModal';
 import { ProviderSelectorModal } from '../../../Componentes/groups/ProviderSelectorModal';
 import { postService } from '../../../ServiçosDoFrontend/postService';

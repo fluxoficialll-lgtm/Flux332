@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useGroupSettings } from '../../../Componentes/ComponentesDeGroups/hooks/useGroupSettings';
-import { AccessSection } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/AccessSection';
+import { AccessSection } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/AccessSection';
 
 export const GroupAccessPage: React.FC = () => {
     const navigate = useNavigate();

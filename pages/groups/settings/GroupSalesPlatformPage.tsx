@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useGroupSettings } from '../../../Componentes/ComponentesDeGroups/hooks/useGroupSettings';
 import { useModal } from '../../../Componentes/ModalSystem';
-import { PlatformStatusCard } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/sales-platform/PlatformStatusCard';
-import { PlatformStructureEditor } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/sales-platform/PlatformStructureEditor';
-import { PlatformInfoBox } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/sales-platform/PlatformInfoBox';
-import { FolderOptionsModal } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/sales-platform/FolderOptionsModal';
-import { ChannelOptionsModal } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/channels/ChannelOptionsModal';
+import { PlatformStatusCard } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/sales-platform/PlatformStatusCard';
+import { PlatformStructureEditor } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/sales-platform/PlatformStructureEditor';
+import { PlatformInfoBox } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/sales-platform/PlatformInfoBox';
+import { FolderOptionsModal } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/sales-platform/FolderOptionsModal';
+import { ChannelOptionsModal } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/channels/ChannelOptionsModal';
 import { SalesFolder, SalesSection, Channel } from '../../../types';
 
 export const GroupSalesPlatformPage: React.FC = () => {

@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { groupService } from '../../../ServiçosDoFrontend/groupService';
 import { ScheduledMessage, Channel } from '../../../types';
 import { useModal } from '../../../Componentes/ModalSystem';
-import { ScheduleSection } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/ScheduleSection';
+import { ScheduleSection } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/ScheduleSection';
 
 export const GroupSchedule: React.FC = () => {
     const navigate = useNavigate();

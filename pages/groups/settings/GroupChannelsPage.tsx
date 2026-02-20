@@ -4,10 +4,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Channel, ChannelSection } from '../../../types';
 import { useModal } from '../../../Componentes/ModalSystem';
 import { useGroupSettings } from '../../../Componentes/ComponentesDeGroups/hooks/useGroupSettings';
-import { ChannelsSection as ChannelsEditor } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/ChannelsSection';
-import { ChannelsHeader } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/channels/ChannelsHeader';
-import { ChannelsNotice } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/channels/ChannelsNotice';
-import { ChannelOptionsModal } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/channels/ChannelOptionsModal';
+import { ChannelsSection as ChannelsEditor } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/ChannelsSection';
+import { ChannelsHeader } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/channels/ChannelsHeader';
+import { ChannelsNotice } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/channels/ChannelsNotice';
+import { ChannelOptionsModal } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/channels/ChannelOptionsModal';
 
 export const GroupChannelsPage: React.FC = () => {
     const navigate = useNavigate();

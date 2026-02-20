@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useGroupSettings } from '../../../Componentes/ComponentesDeGroups/hooks/useGroupSettings';
-import { MembersSection } from '../../../Componentes/ComponentesDeGroups/Componentes/settings/MembersSection';
+import { MembersSection } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/MembersSection';
 
 export const GroupMembersPage: React.FC = () => {
     const navigate = useNavigate();
