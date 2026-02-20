@@ -14,9 +14,9 @@ import { AvatarPreviewModal } from '../Componentes/ui/AvatarPreviewModal';
 import { Footer } from '../Componentes/layout/Footer';
 
 // Novos componentes modulares para visitante
-import { VisitorHeader } from '../features/user-profile/Componentes/VisitorHeader';
-import { VisitorInfoCard } from '../features/user-profile/Componentes/VisitorInfoCard';
-import { VisitorBlockedState, VisitorPrivateState } from '../features/user-profile/Componentes/VisitorStates';
+import { VisitorHeader } from '../Componentes/ComponentesDeUserProfile/Componentes/VisitorHeader';
+import { VisitorInfoCard } from '../Componentes/ComponentesDeUserProfile/Componentes/VisitorInfoCard';
+import { VisitorBlockedState, VisitorPrivateState } from '../Componentes/ComponentesDeUserProfile/Componentes/VisitorStates';
 
 // Componentes reaproveitados do perfil
 import { ProfileTabNav } from '../features/profile/Componentes/ProfileTabNav';
