@@ -6,9 +6,9 @@ import { useModal } from '../Componentes/ModalSystem';
 import { Footer } from '../Componentes/layout/Footer';
 
 // Novos Componentes Modulares
-import { SessaoConta } from '../Componentes/settings/SessaoConta';
-import { SessaoPrivacidade } from '../Componentes/settings/SessaoPrivacidade';
-import { SessaoGeral } from '../Componentes/settings/SessaoGeral';
+import { SessaoConta } from '../Componentes/ComponentesDeConfiguracaoAppFlux/SessaoConta';
+import { SessaoPrivacidade } from '../Componentes/ComponentesDeConfiguracaoAppFlux/SessaoPrivacidade';
+import { SessaoGeral } from '../Componentes/ComponentesDeConfiguracaoAppFlux/SessaoGeral';
 
 export const Settings: React.FC = () => {
   const navigate = useNavigate();
