@@ -4,8 +4,8 @@ import { Group } from '../../types';
 import { GeoData } from '../../ServiçosDoFrontend/geoService';
 import { ConversionResult } from '../../ServiçosDoFrontend/currencyService';
 
-const PaymentFlowModal = lazy(() => import('../payments/PaymentFlowModal').then(m => ({ default: m.PaymentFlowModal })));
-const EmailCaptureModal = lazy(() => import('../payments/EmailCaptureModal').then(m => ({ default: m.EmailCaptureModal })));
+const PaymentFlowModal = lazy(() => import('../ComponentesDeProvedores/PaymentFlowModal').then(m => ({ default: m.PaymentFlowModal })));
+const EmailCaptureModal = lazy(() => import('../ComponentesDeProvedores/EmailCaptureModal').then(m => ({ default: m.EmailCaptureModal })));
 const GlobalSimulatorModal = lazy(() => import('../groups/GlobalSimulatorModal').then(m => ({ default: m.GlobalSimulatorModal })));
 
 interface VipSalesModalsProps {

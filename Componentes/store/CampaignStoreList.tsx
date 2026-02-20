@@ -7,7 +7,7 @@ import { useModal } from '../ModalSystem';
 import { budgetManager } from '../../ServiçosDoFrontend/ServiçoDeAds/engine/BudgetManager';
 
 // Lazy load do modal de pagamento para manter performance
-const PaymentFlowModal = lazy(() => import('../payments/PaymentFlowModal').then(m => ({ default: m.PaymentFlowModal })));
+const PaymentFlowModal = lazy(() => import('../ComponentesDeProvedores/PaymentFlowModal').then(m => ({ default: m.PaymentFlowModal })));
 
 interface CampaignStoreListProps {
     campaigns: AdCampaign[];

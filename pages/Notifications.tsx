@@ -16,7 +16,7 @@ import { MainHeader } from '../Componentes/layout/MainHeader';
 import { ExpiringVipNotificationCard } from '../features/notifications/Componentes/ExpiringVipNotificationCard';
 
 // Lazy loading do modal de pagamento para manter performance
-const PaymentFlowModal = lazy(() => import('../Componentes/payments/PaymentFlowModal').then(m => ({ default: m.PaymentFlowModal })));
+const PaymentFlowModal = lazy(() => import('../Componentes/ComponentesDeProvedores/PaymentFlowModal').then(m => ({ default: m.PaymentFlowModal })));
 
 interface EnrichedNotificationItem extends NotificationItem {
     displayName?: string;
