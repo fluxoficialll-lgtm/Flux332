@@ -1,13 +1,13 @@
 
 import express from 'express';
-import { dbManager } from '../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../database/CentralizadorDeGerenciadoresDeDados.js';
 
 const router = express.Router();
 
 // Listar todos os itens (Orgânicos)
 router.get('/', async (req, res) => {
     try {
-        const items = await dbManager.marketplace.list();
+        const items = await CentralizadorDeGerenciadoresDeDados.marketplace.list();
         res.json({ data: items });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 // Buscar item específico
 router.get('/:id', async (req, res) => {
     try {
-        const item = await dbManager.marketplace.findById(req.params.id);
+        const item = await CentralizadorDeGerenciadoresDeDados.marketplace.findById(req.params.id);
         if (!item) return res.status(404).json({ error: 'Item não encontrado' });
         res.json({ item });
     } catch (e) {
@@ -32,7 +32,7 @@ router.post('/create', async (req, res) => {
         if (!item.id || !item.sellerId) {
             return res.status(400).json({ error: "Dados incompletos (id e sellerId são obrigatórios)" });
         }
-        await dbManager.marketplace.create(item);
+        await CentralizadorDeGerenciadoresDeDados.marketplace.create(item);
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -42,7 +42,7 @@ router.post('/create', async (req, res) => {
 // Deletar item
 router.delete('/:id', async (req, res) => {
     try {
-        await dbManager.marketplace.delete(req.params.id);
+        await CentralizadorDeGerenciadoresDeDados.marketplace.delete(req.params.id);
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });

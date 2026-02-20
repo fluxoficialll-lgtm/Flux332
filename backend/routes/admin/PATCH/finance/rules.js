@@ -1,6 +1,6 @@
 
 import { FeeRepository } from '../../../../database/repositories/financial/FeeRepository.js';
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 import { FinancialAuditLogger } from '../../../../ServiçosDoFrontend/audit/FinancialAuditLogger.js';
 
 /**
@@ -16,7 +16,7 @@ export default async (req, res) => {
         }
 
         // Busca a regra atual para auditoria
-        const currentRes = await dbManager.query("SELECT * FROM platform_fee_rules WHERE id = $1", [id]);
+        const currentRes = await CentralizadorDeGerenciadoresDeDados.query("SELECT * FROM platform_fee_rules WHERE id = $1", [id]);
         if (currentRes.rows.length === 0) {
             return res.status(404).json({ error: "Regra não encontrada para o ID fornecido." });
         }

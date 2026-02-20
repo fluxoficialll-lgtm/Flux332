@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { dbManager } from '../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../database/CentralizadorDeGerenciadoresDeDados.js';
 import { LogDeOperacoes } from '../ServiçosBackEnd/ServiçosDeLogsSofisticados/LogDeOperacoes.js';
 
 const router = express.Router();
@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
     LogDeOperacoes.log('TENTATIVA_LISTAR_POSTS', { limit: Number(limit) || 50, fromCursor: cursor }, req.traceId);
 
     try {
-        const posts = await dbManager.posts.list(Number(limit) || 50, cursor);
+        const posts = await CentralizadorDeGerenciadoresDeDados.posts.list(Number(limit) || 50, cursor);
         
         let nextCursor = null;
         if (posts.length > 0) {
@@ -35,7 +35,7 @@ router.post('/create', async (req, res) => {
             LogDeOperacoes.warn('FALHA_CRIACAO_POST_DADOS_INVALIDOS', { postId: id, authorId }, req.traceId);
             return res.status(400).json({ error: "ID e authorId são obrigatórios" });
         }
-        await dbManager.posts.create(req.body);
+        await CentralizadorDeGerenciadoresDeDados.posts.create(req.body);
         LogDeOperacoes.log('SUCESSO_CRIACAO_POST', { postId: id, authorId }, req.traceId);
         res.json({ success: true });
     } catch (e) {
@@ -58,9 +58,9 @@ router.post('/:id/interact', async (req, res) => {
         
         let success = false;
         if (action === 'remove' && type === 'like') {
-            success = await dbManager.interactions.removeInteraction(id, userId, type);
+            success = await CentralizadorDeGerenciadoresDeDados.interactions.removeInteraction(id, userId, type);
         } else {
-            success = await dbManager.interactions.recordUniqueInteraction(id, userId, type);
+            success = await CentralizadorDeGerenciadoresDeDados.interactions.recordUniqueInteraction(id, userId, type);
         }
         
         LogDeOperacoes.log('SUCESSO_INTERACAO_POST', { postId: id, userId, type, action, processed: success }, req.traceId);
@@ -83,7 +83,7 @@ router.post('/:id/comment', async (req, res) => {
             return res.status(400).json({ error: "Objeto de comentário com authorId é obrigatório" });
         }
         
-        await dbManager.posts.addComment(id, comment);
+        await CentralizadorDeGerenciadoresDeDados.posts.addComment(id, comment);
         LogDeOperacoes.log('SUCESSO_ADICIONAR_COMENTARIO', { postId: id, authorId: comment.authorId }, req.traceId);
         res.json({ success: true });
     } catch (e) {
@@ -100,7 +100,7 @@ router.delete('/:id', async (req, res) => {
     LogDeOperacoes.log('TENTATIVA_DELETAR_POST', { postId: id, initiatedBy }, req.traceId);
 
     try {
-        await dbManager.posts.delete(id);
+        await CentralizadorDeGerenciadoresDeDados.posts.delete(id);
         LogDeOperacoes.log('SUCESSO_DELETAR_POST', { postId: id, initiatedBy }, req.traceId);
         res.json({ success: true });
     } catch (e) {

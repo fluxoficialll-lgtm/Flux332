@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 export default async (req, res) => {
     try {
@@ -19,7 +19,7 @@ export default async (req, res) => {
             WHERE (data->>'type') != 'video'
         `;
 
-        const result = await dbManager.query(sql);
+        const result = await CentralizadorDeGerenciadoresDeDados.query(sql);
         const row = result.rows[0];
 
         res.json({

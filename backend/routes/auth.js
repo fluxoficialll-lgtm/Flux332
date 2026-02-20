@@ -1,111 +1,128 @@
 
 import express from 'express';
-import { dbManager } from '../databaseManager.js';
-import { googleAuthConfig } from '../authConfig.js';
-import { OAuth2Client } from 'google-auth-library';
-import crypto from 'crypto';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { CentralizadorDeGerenciadoresDeDados } from '../database/CentralizadorDeGerenciadoresDeDados.js';
+import { gerarId, ID_PREFIX } from '../services/ServiçoGeracaoDe.IDs.js';
 
 const router = express.Router();
-const client = new OAuth2Client(googleAuthConfig.clientId);
 
-router.get('/config', (req, res) => {
-    res.json({ clientId: googleAuthConfig.clientId });
-});
-
+// Rota de Registro
 router.post('/register', async (req, res) => {
-    const { email } = req.body;
-    console.log(`[AUTH] Registration attempt for email: ${email}`);
+    const { name, username, email, password, dateOfBirth, googleId } = req.body;
 
     try {
-        const user = req.body;
-        if (user.referredById === "") user.referredById = null;
-        const userId = await dbManager.users.create(user);
+        // Verifica se o email ou username já existem
+        if (await CentralizadorDeGerenciadoresDeDados.users.findByEmail(email)) {
+            return res.status(409).json({ message: 'O e-mail fornecido já está em uso.' });
+        }
+        if (await CentralizadorDeGerenciadoresDeDados.users.findByUsername(username)) {
+            return res.status(409).json({ message: 'O nome de usuário já está em uso.' });
+        }
 
-        console.log(`[AUTH] Registration successful for email: ${email}, userId: ${userId}`);
-        res.json({ success: true, user: { ...user, id: userId } });
-    } catch (e) { 
-        console.error(`[AUTH] Registration failed for email: ${email}`, e);
-        res.status(500).json({ error: e.message }); 
+        // Gera um ID de usuário seguro e prefixado
+        const novoUsuarioId = gerarId(ID_PREFIX.USUARIO);
+
+        // Hash da senha se o registro não for via Google
+        const passwordHash = password ? await bcrypt.hash(password, 10) : null;
+
+        // Cria o novo objeto de usuário com o ID gerado
+        const newUser = {
+            id: novoUsuarioId,
+            name,
+            username,
+            email,
+            passwordHash,
+            dateOfBirth,
+            googleId
+        };
+
+        // Salva o usuário no banco de dados
+        await CentralizadorDeGerenciadoresDeDados.users.create(newUser);
+
+        // Gera o token JWT
+        const token = jwt.sign({ userId: novoUsuarioId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(201).json({ 
+            message: 'Usuário registrado com sucesso!', 
+            token, 
+            userId: novoUsuarioId 
+        });
+
+    } catch (error) {
+        console.error('Erro no registro:', error);
+        res.status(500).json({ message: 'Ocorreu um erro inesperado durante o registro.' });
     }
 });
 
+// Rota de Login
 router.post('/login', async (req, res) => {
-    const { email } = req.body;
-    console.log(`[AUTH] Login attempt for email: ${email}`);
+    const { email, password } = req.body;
 
     try {
-        const { password } = req.body;
-        const user = await dbManager.users.findByEmail(email);
-
-        // Atenção: a verificação de senha deve ser feita com hash em um app real
-        if (user && user.password === password) {
-            console.log(`[AUTH] Login successful for email: ${email}, userId: ${user.id}`);
-            res.json({ user, token: 'session_' + crypto.randomUUID() });
-        } else {
-            console.warn(`[AUTH] Invalid credentials for email: ${email}`);
-            res.status(401).json({ error: 'Credenciais inválidas' });
+        const user = await CentralizadorDeGerenciadoresDeDados.users.findByEmail(email);
+        if (!user || !user.passwordHash) {
+            return res.status(401).json({ message: 'Credenciais inválidas.' });
         }
-    } catch (e) { 
-        console.error(`[AUTH] Login failed for email: ${email}`, e);
-        res.status(500).json({ error: e.message }); 
+
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Credenciais inválidas.' });
+        }
+
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(200).json({ message: 'Login bem-sucedido!', token, userId: user.id });
+
+    } catch (error) {
+        console.error('Erro no login:', error);
+        res.status(500).json({ message: 'Ocorreu um erro inesperado durante o login.' });
     }
 });
 
-router.post('/google', async (req, res) => {
-    console.log(`[AUTH] Google auth attempt. Token provided: ${!!req.body.googleToken}`);
+// Rota de autenticação com Google
+router.post('/auth/google', async (req, res) => {
+    const { googleId, email, name } = req.body;
 
     try {
-        const { googleToken, referredBy } = req.body;
-        let googleId, email, name;
-
-        if (googleAuthConfig.clientId !== "GOOGLE_CLIENT_ID_NAO_CONFIGURADO" && googleToken && googleToken.length > 50) {
-            try {
-                const ticket = await client.verifyIdToken({ idToken: googleToken, audience: googleAuthConfig.clientId });
-                const payload = ticket.getPayload();
-                googleId = payload['sub']; 
-                email = payload['email']; 
-                name = payload['name'];
-            } catch (err) {
-                console.warn("[AUTH] Google token verification failed", err);
-            }
-        }
-
-        if (!googleId) {
-            return res.status(400).json({ error: "Invalid or missing Google token" });
-        }
-
-        let user = await dbManager.users.findByGoogleId(googleId);
-        let isNew = false;
+        let user = await CentralizadorDeGerenciadoresDeDados.users.findByGoogleId(googleId);
 
         if (!user) {
-            const existingByEmail = await dbManager.users.findByEmail(email);
-            if (existingByEmail) {
-                // Associa a conta Google a um usuário existente com o mesmo email
-                user = { ...existingByEmail, googleId };
-                await dbManager.users.update({ id: user.id, googleId });
-                console.log(`[AUTH] Associated Google account for user: ${user.id}, email: ${email}`);
+            // Se não encontrar por Google ID, tenta por e-mail para vincular contas
+            user = await CentralizadorDeGerenciadoresDeDados.users.findByEmail(email);
+
+            if (user) {
+                // Vincula o Google ID a uma conta de e-mail existente
+                user.googleId = googleId;
+                await CentralizadorDeGerenciadoresDeDados.users.update(user);
             } else {
-                // Cria um novo usuário
-                isNew = true;
-                const newUser = { 
-                    email: email.toLowerCase().trim(), 
+                // Cria um novo usuário se não existir nem por Google ID nem por e-mail
+                const novoUsuarioId = gerarId(ID_PREFIX.USUARIO);
+                const username = email.split('@')[0]; // Gera um username a partir do e-mail
+                
+                const newUser = {
+                    id: novoUsuarioId,
                     googleId,
-                    name: name || 'Usuário Flux',
-                    username: `user_${crypto.randomUUID().substring(0, 8)}`,
-                    referredById: referredBy || null,
+                    email,
+                    name,
+                    username,
+                    passwordHash: null, // Sem senha, pois é login social
+                    dateOfBirth: null // Pode ser solicitado depois
                 };
-                const userId = await dbManager.users.create(newUser);
-                user = { ...newUser, id: userId };
-                console.log(`[AUTH] New user created via Google: ${userId}, email: ${email}`);
+
+                await CentralizadorDeGerenciadoresDeDados.users.create(newUser);
+                user = newUser;
             }
         }
 
-        console.log(`[AUTH] Google auth successful for user: ${user.id}, email: ${user.email}, isNew: ${isNew}`);
-        res.json({ user, token: 'g_session_' + crypto.randomUUID(), isNew });
+        // Gera o token JWT para o usuário encontrado ou criado
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    } catch (e) { 
-        console.error("[AUTH] Google auth failed", e);
-        res.status(500).json({ error: "Erro na autenticação com Google." }); 
+        res.status(200).json({ message: 'Autenticação com Google bem-sucedida!', token, userId: user.id });
+
+    } catch (error) {
+        console.error('Erro na autenticação com Google:', error);
+        res.status(500).json({ message: 'Ocorreu um erro inesperado durante a autenticação com o Google.' });
     }
 });
 

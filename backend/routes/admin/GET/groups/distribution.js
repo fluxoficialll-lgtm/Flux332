@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 export default async (req, res) => {
     try {
@@ -12,7 +12,7 @@ export default async (req, res) => {
             FROM groups
         `;
 
-        const result = await dbManager.query(sql);
+        const result = await CentralizadorDeGerenciadoresDeDados.query(sql);
         const r = result.rows[0];
         const total = parseInt(r.total) || 1; // Evita divisão por zero
 

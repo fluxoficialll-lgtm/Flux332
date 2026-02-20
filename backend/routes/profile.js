@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { dbManager } from '../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../database/CentralizadorDeGerenciadoresDeDados.js';
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ router.get('/edit', async (req, res) => {
             return res.status(401).json({ error: 'Usuário não autenticado.' });
         }
 
-        const user = await dbManager.users.findById(userId);
+        const user = await CentralizadorDeGerenciadoresDeDados.users.findById(userId);
         if (!user) {
             return res.status(404).json({ error: 'Usuário não encontrado.' });
         }

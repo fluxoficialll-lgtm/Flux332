@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * AiPerformanceLog: Monitor de inteligência artificial.

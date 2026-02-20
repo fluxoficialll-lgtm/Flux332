@@ -1,7 +1,7 @@
 
 import express from 'express';
-import { AdAnalyticsRepository } from '../database/repositories/AdAnalyticsRepository.js';
-import { dbManager } from '../databaseManager.js';
+import { AdAnalyticsRepository } from '../database/GerenciadoresDeDados/AdAnalyticsRepository.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../database/CentralizadorDeGerenciadoresDeDados.js';
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ router.post('/create', async (req, res) => {
         if (!campaign.id || !campaign.ownerId) {
             return res.status(400).json({ error: "ID e ownerId são obrigatórios." });
         }
-        await dbManager.ads.create(campaign);
+        await CentralizadorDeGerenciadoresDeDados.ads.create(campaign);
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -24,7 +24,7 @@ router.put('/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const updates = req.body;
-        await dbManager.ads.update(id, updates);
+        await CentralizadorDeGerenciadoresDeDados.ads.update(id, updates);
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -37,7 +37,7 @@ router.post('/:id/top-up', async (req, res) => {
         const { id } = req.params;
         const { amount } = req.body;
         if (!amount || amount <= 0) return res.status(400).json({ error: "Valor inválido." });
-        await dbManager.ads.addBudget(id, amount);
+        await CentralizadorDeGerenciadoresDeDados.ads.addBudget(id, amount);
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -48,7 +48,7 @@ router.post('/:id/top-up', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        await dbManager.ads.delete(id);
+        await CentralizadorDeGerenciadoresDeDados.ads.delete(id);
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });

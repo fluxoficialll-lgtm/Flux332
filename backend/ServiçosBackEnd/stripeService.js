@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { dbManager } from '../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../database/CentralizadorDeGerenciadoresDeDados.js';
 import { FeeEngine } from './financial/FeeEngine.js';
 
 // Usamos a chave da FLUX (Plataforma) para criar as sessões e coletar taxas
@@ -94,7 +94,7 @@ export const stripeService = {
         const platformProfit = parseFloat(session.metadata.platformFee || 0);
 
         try {
-            await dbManager.financial.recordTransaction({
+            await CentralizadorDeGerenciadoresDeDados.financial.recordTransaction({
                 userId: sellerId,
                 type: 'sale',
                 amount: amount - platformProfit,

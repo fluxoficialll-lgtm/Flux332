@@ -3,10 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCheckoutConfig } from '../../../Componentes/ComponentesDeGroups/hooks/settings/useCheckoutConfig';
 
 // Componentes Modulares
-import { CheckoutConfigHeader } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/checkout/CheckoutConfigHeader';
-import { CheckoutStepSelector } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/checkout/CheckoutStepSelector';
-import { CheckoutMethodItem } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/checkout/CheckoutMethodItem';
-import { CheckoutLivePreview } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/checkout/CheckoutLivePreview';
+import { CheckoutConfigHeader } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/ComponentesDeConfiguracoesDeCheckout/CheckoutConfigHeader';
+import { CheckoutStepSelector } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/ComponentesDeConfiguracoesDeCheckout/CheckoutStepSelector';
+import { CheckoutMethodItem } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/ComponentesDeConfiguracoesDeCheckout/CheckoutMethodItem';
+import { CheckoutLivePreview } from '../../../Componentes/ComponentesDeGroups/Componentes/ComponentesDeConfiguracoesDeGrupo/ComponentesDeConfiguracoesDeCheckout/CheckoutLivePreview';
 
 export const GroupCheckoutConfigPage: React.FC = () => {
     const navigate = useNavigate();

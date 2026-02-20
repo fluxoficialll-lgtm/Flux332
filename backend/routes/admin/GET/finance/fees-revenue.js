@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * GET /api/admin/execute/finance/fees-revenue
@@ -29,7 +29,7 @@ export default async (req, res) => {
             WHERE status = 'paid'
         `;
 
-        const result = await dbManager.query(sql);
+        const result = await CentralizadorDeGerenciadoresDeDados.query(sql);
         const row = result.rows[0];
 
         res.json({

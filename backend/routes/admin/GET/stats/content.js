@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * GET /api/admin/execute/stats/content
@@ -38,7 +38,7 @@ export default async (req, res) => {
             FROM groups
         `;
 
-        const result = await dbManager.query(sqlContent);
+        const result = await CentralizadorDeGerenciadoresDeDados.query(sqlContent);
         const r = result.rows[0];
 
         res.json({

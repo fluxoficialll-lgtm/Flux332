@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * GET /api/admin/execute/finance/fee-rules
@@ -7,7 +7,7 @@ import { dbManager } from '../../../../databaseManager.js';
  */
 export default async (req, res) => {
     try {
-        const rules = await dbManager.fees.getAllRules();
+        const rules = await CentralizadorDeGerenciadoresDeDados.fees.getAllRules();
         res.json({
             success: true,
             data: rules

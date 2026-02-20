@@ -1,14 +1,14 @@
 
 import express from 'express';
 import { syncPayService } from '../../ServiçosBackEnd/syncpayService.js';
-import { dbManager } from '../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 const router = express.Router();
 
 async function getPartnerTokenForSeller(sellerIdOrEmail) {
     if (!sellerIdOrEmail) return null;
     
-    const user = await dbManager.users.findByEmail(sellerIdOrEmail) || await dbManager.users.findById(sellerIdOrEmail);
+    const user = await CentralizadorDeGerenciadoresDeDados.users.findByEmail(sellerIdOrEmail) || await CentralizadorDeGerenciadoresDeDados.users.findById(sellerIdOrEmail);
     if (!user) {
         console.warn(`[SyncPay Proxy] Vendedor não encontrado: ${sellerIdOrEmail}`);
         return null;
@@ -43,7 +43,7 @@ router.post('/disconnect', async (req, res) => {
             return res.status(401).json({ error: 'Usuário não autenticado.' });
         }
 
-        const user = await dbManager.users.findById(userId);
+        const user = await CentralizadorDeGerenciadoresDeDados.users.findById(userId);
         if (!user) {
             return res.status(404).json({ error: 'Usuário não encontrado.' });
         }
@@ -55,7 +55,7 @@ router.post('/disconnect', async (req, res) => {
             paymentConfigs.syncpay.clientSecret = null;
         }
 
-        await dbManager.users.update({ id: userId, paymentConfigs });
+        await CentralizadorDeGerenciadoresDeDados.users.update({ id: userId, paymentConfigs });
 
         res.json({ success: true, message: 'SyncPay desconectado com sucesso.' });
     } catch (error) {

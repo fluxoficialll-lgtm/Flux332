@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * GET /api/admin/execute/stats/financial
@@ -34,8 +34,8 @@ export default async (req, res) => {
         `;
 
         const [metricsRes, methodsRes] = await Promise.all([
-            dbManager.query(sqlMetrics),
-            dbManager.query(sqlMethods)
+            CentralizadorDeGerenciadoresDeDados.query(sqlMetrics),
+            CentralizadorDeGerenciadoresDeDados.query(sqlMethods)
         ]);
 
         const m = metricsRes.rows[0];

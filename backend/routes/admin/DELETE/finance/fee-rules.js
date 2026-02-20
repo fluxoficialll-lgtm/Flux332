@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * DELETE /api/admin/execute/finance/fee-rules
@@ -13,7 +13,7 @@ export default async (req, res) => {
             return res.status(400).json({ error: "O ID da regra é obrigatório para exclusão." });
         }
 
-        const result = await dbManager.query("DELETE FROM platform_fee_rules WHERE id = $1", [id]);
+        const result = await CentralizadorDeGerenciadoresDeDados.query("DELETE FROM platform_fee_rules WHERE id = $1", [id]);
 
         if (result.rowCount === 0) {
             return res.status(404).json({ error: "Regra não encontrada." });

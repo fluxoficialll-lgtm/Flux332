@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * GET /api/admin/execute/stats/users
@@ -19,7 +19,7 @@ export default async (req, res) => {
             LEFT JOIN ads ON users.id = ads.owner_id
         `;
 
-        const result = await dbManager.query(sqlUsers);
+        const result = await CentralizadorDeGerenciadoresDeDados.query(sqlUsers);
         const r = result.rows[0];
 
         res.json({

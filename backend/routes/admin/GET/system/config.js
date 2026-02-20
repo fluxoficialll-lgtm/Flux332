@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 export default async (req, res) => {
     const defaultConfig = {
@@ -9,7 +9,7 @@ export default async (req, res) => {
     };
 
     try {
-        const result = await dbManager.query("SELECT value FROM platform_settings WHERE key = 'system_config'");
+        const result = await CentralizadorDeGerenciadoresDeDados.query("SELECT value FROM platform_settings WHERE key = 'system_config'");
         
         let config = { ...defaultConfig };
 

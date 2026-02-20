@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * Comando: insights
@@ -13,7 +13,7 @@ export default async (req, res) => {
 
         // 1. Se houver userId, busca rastro do perfil e social graph
         if (userId) {
-            const userRes = await dbManager.query(`
+            const userRes = await CentralizadorDeGerenciadoresDeDados.query(`
                 SELECT 
                     u.id, u.email, u.handle, u.data->'profile' as profile,
                     (SELECT COUNT(*) FROM relationships WHERE following_id = u.id AND status = 'accepted') as followers,
@@ -53,7 +53,7 @@ export default async (req, res) => {
                 (SELECT pg_database_size(current_database())) as db_size_bytes
         `;
 
-        const statsRes = await dbManager.query(statsSql);
+        const statsRes = await CentralizadorDeGerenciadoresDeDados.query(statsSql);
         const s = statsRes.rows[0];
 
         res.json({

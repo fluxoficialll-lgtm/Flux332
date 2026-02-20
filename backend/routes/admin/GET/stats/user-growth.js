@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * Ação: user-growth
@@ -30,7 +30,7 @@ export default async (req, res) => {
             FROM users
         `;
 
-        const result = await dbManager.query(sql);
+        const result = await CentralizadorDeGerenciadoresDeDados.query(sql);
         const row = result.rows[0];
 
         // Converte strings do PG para números reais

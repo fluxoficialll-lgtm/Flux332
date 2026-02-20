@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { dbManager } from '../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../database/CentralizadorDeGerenciadoresDeDados.js';
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ router.get('/private', async (req, res) => {
     try {
         const { email } = req.query;
         if (!email) return res.status(400).json({ error: "Email é obrigatório." });
-        const chats = await dbManager.chats.findPrivate(email);
+        const chats = await CentralizadorDeGerenciadoresDeDados.chats.findPrivate(email);
         res.json({ chats });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -16,7 +16,7 @@ router.get('/private', async (req, res) => {
 router.get('/private/:chatId', async (req, res) => {
     try {
         const { chatId } = req.params;
-        const chat = await dbManager.chats.findById(chatId);
+        const chat = await CentralizadorDeGerenciadoresDeDados.chats.findById(chatId);
         if (!chat) return res.json({ messages: [] });
         res.json({ messages: chat.messages || [] });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -24,7 +24,7 @@ router.get('/private/:chatId', async (req, res) => {
 
 router.get('/groups/:id', async (req, res) => {
     try {
-        const chat = await dbManager.chats.findById(req.params.id);
+        const chat = await CentralizadorDeGerenciadoresDeDados.chats.findById(req.params.id);
         if (!chat) return res.json({ messages: [] });
         res.json({ messages: chat.messages || [] });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -35,7 +35,7 @@ router.post('/send', async (req, res) => {
         const { chatId, message } = req.body;
         if (!chatId || !message) return res.status(400).json({ error: "chatId e message são obrigatórios." });
         
-        let chatData = await dbManager.chats.findById(chatId);
+        let chatData = await CentralizadorDeGerenciadoresDeDados.chats.findById(chatId);
         
         if (chatData) {
             chatData.deletedBy = []; 
@@ -50,10 +50,10 @@ router.post('/send', async (req, res) => {
             };
         }
 
-        await dbManager.chats.set(chatData);
+        await CentralizadorDeGerenciadoresDeDados.chats.set(chatData);
 
         if (!chatId.includes('@')) {
-            await dbManager.groups.updateActivity(chatId);
+            await CentralizadorDeGerenciadoresDeDados.groups.updateActivity(chatId);
         }
 
         if (req.io) {
@@ -73,7 +73,7 @@ router.delete('/private/:chatId', async (req, res) => {
 
         // Se enviou IDs de mensagens, é exclusão de mensagens, não da conversa toda
         if (messageIds && messageIds.length > 0) {
-            await dbManager.chats.deleteMessages(chatId, messageIds, userEmail, target);
+            await CentralizadorDeGerenciadoresDeDados.chats.deleteMessages(chatId, messageIds, userEmail, target);
             
             if (target === 'all' && req.io) {
                 req.io.to(chatId).emit('messages_deleted_globally', { chatId, messageIds });
@@ -85,13 +85,13 @@ router.delete('/private/:chatId', async (req, res) => {
         // Caso contrário, exclusão do CHAT INTEIRO
         let result;
         if (target === 'all') {
-            result = await dbManager.chats.hardDelete(chatId);
+            result = await CentralizadorDeGerenciadoresDeDados.chats.hardDelete(chatId);
             if (req.io) {
                 req.io.to(chatId).emit('chat_deleted_globally', { chatId });
             }
             res.json({ success: true, action: 'deleted_for_all' });
         } else {
-            result = await dbManager.chats.markAsDeleted(chatId, userEmail);
+            result = await CentralizadorDeGerenciadoresDeDados.chats.markAsDeleted(chatId, userEmail);
             res.json({ success: true, action: result });
         }
     } catch (e) { res.status(500).json({ error: e.message }); }

@@ -1,6 +1,6 @@
 
 import { EventEmitter } from 'events';
-import { dbManager } from '../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../database/CentralizadorDeGerenciadoresDeDados.js';
 
 class EventProcessor extends EventEmitter {
     constructor() {

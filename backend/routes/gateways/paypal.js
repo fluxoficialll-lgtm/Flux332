@@ -1,7 +1,7 @@
 
 import express from 'express';
 import { paypalService } from '../../ServiçosBackEnd/paypalService.js';
-import { dbManager } from '../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.post('/disconnect', async (req, res) => {
             return res.status(401).json({ error: 'Usuário não autenticado.' });
         }
 
-        const user = await dbManager.users.findById(userId);
+        const user = await CentralizadorDeGerenciadoresDeDados.users.findById(userId);
         if (!user) {
             return res.status(404).json({ error: 'Usuário não encontrado.' });
         }
@@ -34,7 +34,7 @@ router.post('/disconnect', async (req, res) => {
             paymentConfigs.paypal.clientSecret = null;
         }
 
-        await dbManager.users.update({ id: userId, paymentConfigs });
+        await CentralizadorDeGerenciadoresDeDados.users.update({ id: userId, paymentConfigs });
 
         res.json({ success: true, message: 'PayPal desconectado com sucesso.' });
     } catch (error) {

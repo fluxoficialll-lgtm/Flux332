@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * Ação: stats | Categoria: sellers
@@ -13,7 +13,7 @@ export default async (req, res) => {
                 COUNT(DISTINCT seller_id) FILTER (WHERE created_at >= CURRENT_DATE - INTERVAL '30 days') as d30
             FROM marketplace
         `;
-        const result = await dbManager.query(sql);
+        const result = await CentralizadorDeGerenciadoresDeDados.query(sql);
         const row = result.rows[0];
 
         res.json({

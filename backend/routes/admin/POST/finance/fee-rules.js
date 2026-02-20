@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 import { FinancialAuditLogger } from '../../../../ServiçosDoFrontend/audit/FinancialAuditLogger.js';
 
 /**
@@ -37,7 +37,7 @@ export default async (req, res) => {
                 updated_at = NOW()
         `;
 
-        await dbManager.query(sql, [
+        await CentralizadorDeGerenciadoresDeDados.query(sql, [
             provider.toLowerCase(),
             method.toLowerCase(),
             (country_code || 'ALL').toUpperCase(),

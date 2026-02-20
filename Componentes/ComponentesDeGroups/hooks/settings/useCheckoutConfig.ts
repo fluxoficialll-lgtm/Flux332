@@ -4,7 +4,7 @@ import { groupService } from '../../../../ServiçosDoFrontend/groupService';
 import { authService } from '../../../../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
 import { useModal } from '../../../../Componentes/ModalSystem';
 import { Group, CheckoutConfig } from '../../../../types';
-import { PROVIDER_METHODS } from '../../Componentes/ComponentesDeConfiguracoesDeGrupo/checkout/CheckoutMethodData';
+import { PROVIDER_METHODS } from '../../Componentes/ComponentesDeConfiguracoesDeGrupo/ComponentesDeConfiguracoesDeCheckout/CheckoutMethodData';
 import { PREVIEW_COUNTRIES } from '../../../../Componentes/groups/GlobalSimulatorModal';
 
 /**

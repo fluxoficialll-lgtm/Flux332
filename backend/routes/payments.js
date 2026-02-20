@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { dbManager } from '../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../database/CentralizadorDeGerenciadoresDeDados.js';
 import { FeeEngine } from '../ServiçosBackEnd/financial/FeeEngine.js';
 import { NotificationEmitter } from '../ServiçosBackEnd/socket/NotificationEmitter.js';
 import { facebookCapi } from '../ServiçosBackEnd/facebookCapi.js';
@@ -26,7 +26,7 @@ router.post('/process-sale-success', async (req, res) => {
 
         // Etapa 2: Registro Financeiro no Banco de Dados
         LogDeOperacoes.log('REGISTRANDO_TRANSACAO_FINANCEIRA_DB', { ...logContext, netAmount: breakdown.netAmount }, req.traceId);
-        await dbManager.financial.recordTransaction({
+        await CentralizadorDeGerenciadoresDeDados.financial.recordTransaction({
             userId: sellerId,
             type: 'sale',
             amount: breakdown.netAmount,
@@ -44,8 +44,8 @@ router.post('/process-sale-success', async (req, res) => {
         LogDeOperacoes.log('SUCESSO_REGISTRO_TRANSACAO_DB', logContext, req.traceId);
 
         // Etapa 3: Disparo de Evento para Facebook CAPI (se aplicável)
-        const seller = await dbManager.users.findById(sellerId);
-        const group = await dbManager.groups.findById(groupId);
+        const seller = await CentralizadorDeGerenciadoresDeDados.users.findById(sellerId);
+        const group = await CentralizadorDeGerenciadoresDeDados.groups.findById(groupId);
 
         if (seller && seller.marketingConfig?.pixelId) {
             LogDeOperacoes.log('TENTATIVA_ENVIO_EVENTO_CAPI', { ...logContext, pixelId: seller.marketingConfig.pixelId }, req.traceId);

@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 export default async (req, res) => {
     try {
@@ -25,7 +25,7 @@ export default async (req, res) => {
             WHERE type = 'sale' AND status = 'paid'
         `;
 
-        const result = await dbManager.query(sql);
+        const result = await CentralizadorDeGerenciadoresDeDados.query(sql);
         const r = result.rows[0];
 
         res.json({

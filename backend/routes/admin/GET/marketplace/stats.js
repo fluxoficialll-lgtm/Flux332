@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 export default async (req, res) => {
     try {
@@ -9,7 +9,7 @@ export default async (req, res) => {
                 COUNT(*) FILTER (WHERE created_at >= CURRENT_DATE) as hoje
             FROM marketplace
         `;
-        const result = await dbManager.query(sql);
+        const result = await CentralizadorDeGerenciadoresDeDados.query(sql);
         const row = result.rows[0];
 
         res.json({

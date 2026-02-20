@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 export default async (req, res) => {
     try {
@@ -7,8 +7,8 @@ export default async (req, res) => {
         const sqlHistory = "SELECT * FROM infrastructure_telemetry ORDER BY created_at DESC LIMIT 30";
 
         const [sizeRes, historyRes] = await Promise.all([
-            dbManager.query(sqlDbSize),
-            dbManager.query(sqlHistory)
+            CentralizadorDeGerenciadoresDeDados.query(sqlDbSize),
+            CentralizadorDeGerenciadoresDeDados.query(sqlHistory)
         ]);
 
         res.json({

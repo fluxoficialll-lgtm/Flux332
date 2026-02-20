@@ -1,5 +1,6 @@
 
 import { query } from '../pool.js';
+import { carregarConsulta } from '../gerenciadorDeConsultas.js';
 
 const toUuid = (val) => (val === "" || val === "undefined" || val === "null") ? null : val;
 
@@ -11,7 +12,7 @@ const mapRowToUser = (row) => {
         name: row.name,
         username: row.username,
         email: row.email,
-        googleId: row.google_id, // Adicionado google_id
+        googleId: row.google_id, 
         dateOfBirth: row.date_of_birth,
         createdAt: row.created_at
     };
@@ -25,7 +26,7 @@ export const UserRepository = {
      */
     async findByEmail(email) {
         if (!email) return null;
-        const sql = 'SELECT * FROM users WHERE email = $1';
+        const sql = await carregarConsulta('usuarios/encontrarPorEmail.sql');
         const res = await query(sql, [email.toLowerCase().trim()]);
         if (res.rows[0]) {
             console.log(`[PostgreSQL] User with email ${email} was read from the database.`);
@@ -40,7 +41,7 @@ export const UserRepository = {
      */
     async findByUsername(username) {
         if (!username) return null;
-        const sql = 'SELECT * FROM users WHERE username = $1';
+        const sql = await carregarConsulta('usuarios/encontrarPorUsername.sql');
         const res = await query(sql, [username.toLowerCase().trim()]);
         if (res.rows[0]) {
             console.log(`[PostgreSQL] User with username ${username} was read from the database.`);
@@ -56,7 +57,7 @@ export const UserRepository = {
     async findById(id) {
         const uuid = toUuid(id);
         if (!uuid) return null;
-        const sql = 'SELECT * FROM users WHERE id = $1';
+        const sql = await carregarConsulta('usuarios/encontrarPorId.sql');
         const res = await query(sql, [uuid]);
         if (res.rows[0]) {
             console.log(`[PostgreSQL] User with ID ${id} was read from the database.`);
@@ -71,7 +72,7 @@ export const UserRepository = {
      */
     async findByGoogleId(googleId) {
         if (!googleId) return null;
-        const sql = 'SELECT * FROM users WHERE google_id = $1';
+        const sql = await carregarConsulta('usuarios/encontrarPorGoogleId.sql');
         const res = await query(sql, [googleId]);
         if (res.rows[0]) {
             console.log(`[PostgreSQL] User with Google ID ${googleId} was read from the database.`);
@@ -81,21 +82,23 @@ export const UserRepository = {
 
     /**
      * Cria um novo usuário no banco de dados.
-     * @param {object} user - O objeto do usuário a ser criado.
-     * @returns {string} O ID do novo usuário.
+     * O ID deve ser pré-gerado e fornecido no objeto user.
+     * @param {object} user - O objeto do usuário a ser criado, incluindo o ID.
+     * @returns {string} O ID do usuário criado.
      */
     async create(user) {
-        const { name, username, email, passwordHash, dateOfBirth, googleId } = user;
-        const sql = `
-            INSERT INTO users (name, username, email, password_hash, date_of_birth, google_id)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING id;
-        `;
-        const params = [name, username, email.toLowerCase().trim(), passwordHash, dateOfBirth, googleId];
-        const res = await query(sql, params);
-        const newUserId = res.rows[0].id;
-        console.log(`[PostgreSQL] User successfully inserted with ID: ${newUserId}`);
-        return newUserId;
+        const { id, name, username, email, passwordHash, dateOfBirth, googleId } = user;
+
+        if (!id) {
+            throw new Error('User creation failed: ID is missing. The calling service (e.g., auth route) must generate it.');
+        }
+
+        const sql = await carregarConsulta('usuarios/criar.sql');
+        const params = [id, name, username, email.toLowerCase().trim(), passwordHash, dateOfBirth, googleId];
+        await query(sql, params);
+        
+        console.log(`[PostgreSQL] User successfully inserted with ID: ${id}`);
+        return id;
     },
 
     /**
@@ -108,16 +111,7 @@ export const UserRepository = {
         const uuid = toUuid(id);
         if (!uuid) throw new Error('Update failed: Invalid or missing user ID.');
 
-        const sql = `
-            UPDATE users SET 
-                name = COALESCE($1, name),
-                username = COALESCE($2, username),
-                email = COALESCE($3, email),
-                password_hash = COALESCE($4, password_hash),
-                date_of_birth = COALESCE($5, date_of_birth),
-                google_id = COALESCE($6, google_id) // Adicionado google_id
-            WHERE id = $7
-        `;
+        const sql = await carregarConsulta('usuarios/atualizar.sql');
         const params = [name, username, email, passwordHash, dateOfBirth, googleId, uuid];
         const res = await query(sql, params);
         if (res.rowCount > 0) {
@@ -135,7 +129,7 @@ export const UserRepository = {
         const uuid = toUuid(id);
         if (!uuid) return false;
 
-        const sql = 'DELETE FROM users WHERE id = $1';
+        const sql = await carregarConsulta('usuarios/apagar.sql');
         const res = await query(sql, [uuid]);
 
         if (res.rowCount > 0) {
@@ -149,7 +143,7 @@ export const UserRepository = {
      * @returns {Array<object>} Uma lista de usuários.
      */
     async getAll() {
-        const sql = 'SELECT * FROM users ORDER BY created_at DESC LIMIT 1000';
+        const sql = await carregarConsulta('usuarios/listarTodos.sql');
         const res = await query(sql);
         console.log(`[PostgreSQL] ${res.rowCount} users read from the database.`);
         return res.rows.map(mapRowToUser);

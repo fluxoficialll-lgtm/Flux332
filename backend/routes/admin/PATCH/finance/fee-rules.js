@@ -1,6 +1,6 @@
 
 import { FeeRepository } from '../../../../database/repositories/financial/FeeRepository.js';
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 import { FinancialAuditLogger } from '../../../../ServiçosDoFrontend/audit/FinancialAuditLogger.js';
 
 /**
@@ -12,7 +12,7 @@ export default async (req, res) => {
         if (!id || !data) return res.status(400).json({ error: "ID da regra e dados de atualização são obrigatórios." });
 
         // Busca dados atuais para o log antes de atualizar ou usa os novos enviados
-        const currentRuleRes = await dbManager.query("SELECT * FROM platform_fee_rules WHERE id = $1", [id]);
+        const currentRuleRes = await CentralizadorDeGerenciadoresDeDados.query("SELECT * FROM platform_fee_rules WHERE id = $1", [id]);
         const currentRule = currentRuleRes.rows[0];
 
         if (!currentRule) {

@@ -1,6 +1,6 @@
 
 import express from 'express';
-import { dbManager } from '../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../database/CentralizadorDeGerenciadoresDeDados.js';
 import { LogDeOperacoes } from '../ServiçosBackEnd/ServiçosDeLogsSofisticados/LogDeOperacoes.js';
 
 const router = express.Router();
@@ -9,7 +9,7 @@ router.get('/sync', async (req, res) => {
     // Log de depuração para uma rota potencialmente ruidosa.
     LogDeOperacoes.debug('TENTATIVA_SYNC_USUARIOS', {}, req.traceId);
     try {
-        const users = await dbManager.users.getAll();
+        const users = await CentralizadorDeGerenciadoresDeDados.users.getAll();
         res.json({ users });
     } catch (e) { 
         LogDeOperacoes.error('FALHA_SYNC_USUARIOS', { error: e }, req.traceId);
@@ -24,7 +24,7 @@ router.get('/search', async (req, res) => {
     LogDeOperacoes.log('TENTATIVA_BUSCA_USUARIO', { query: q }, req.traceId);
 
     try {
-        const users = await dbManager.users.getAll();
+        const users = await CentralizadorDeGerenciadoresDeDados.users.getAll();
         const filtered = users.filter(u => 
             u.profile?.name?.toLowerCase().includes(q.toLowerCase()) || 
             u.profile?.nickname?.toLowerCase().includes(q.toLowerCase())
@@ -44,7 +44,7 @@ router.get('/update', async (req, res) => {
     LogDeOperacoes.log('TENTATIVA_GET_USUARIO_PARA_UPDATE', { email }, req.traceId);
 
     try {
-        const user = await dbManager.users.findByEmail(email);
+        const user = await CentralizadorDeGerenciadoresDeDados.users.findByEmail(email);
         if (user) {
             LogDeOperacoes.log('SUCESSO_GET_USUARIO_PARA_UPDATE', { userId: user.id, email }, req.traceId);
             res.json({ user });
@@ -63,10 +63,10 @@ router.put('/update', async (req, res) => {
     LogDeOperacoes.log('TENTATIVA_ATUALIZACAO_USUARIO', { email, fields: Object.keys(updates) }, req.traceId);
 
     try {
-        const user = await dbManager.users.findByEmail(email);
+        const user = await CentralizadorDeGerenciadoresDeDados.users.findByEmail(email);
         if (user) {
             const updated = { ...user, ...updates };
-            await dbManager.users.update(updated);
+            await CentralizadorDeGerenciadoresDeDados.users.update(updated);
             LogDeOperacoes.log('SUCESSO_ATUALIZACAO_USUARIO', { userId: user.id, email, fields: Object.keys(updates) }, req.traceId);
             res.json({ user: updated });
         } else { 

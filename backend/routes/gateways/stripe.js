@@ -1,7 +1,7 @@
 
 import express from 'express';
 import { stripeService } from '../../ServiçosBackEnd/stripeService.js';
-import { dbManager } from '../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ router.post('/disconnect', async (req, res) => {
             return res.status(401).json({ error: 'Usuário não autenticado.' });
         }
 
-        const user = await dbManager.users.findById(userId);
+        const user = await CentralizadorDeGerenciadoresDeDados.users.findById(userId);
         if (!user) {
             return res.status(404).json({ error: 'Usuário não encontrado.' });
         }
@@ -33,7 +33,7 @@ router.post('/disconnect', async (req, res) => {
             paymentConfigs.stripe.secretKey = null;
         }
 
-        await dbManager.users.update({ id: userId, paymentConfigs });
+        await CentralizadorDeGerenciadoresDeDados.users.update({ id: userId, paymentConfigs });
 
         res.json({ success: true, message: 'Stripe desconectado com sucesso.' });
     } catch (error) {

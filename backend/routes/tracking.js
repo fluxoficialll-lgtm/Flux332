@@ -1,7 +1,7 @@
 
 import express from 'express';
 import { facebookCapi } from '../ServiçosBackEnd/facebookCapi.js';
-import { dbManager } from '../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../database/CentralizadorDeGerenciadoresDeDados.js';
 
 const router = express.Router();
 
@@ -46,7 +46,7 @@ router.get('/pixel-info', async (req, res) => {
         const { ref } = req.query;
         if (!ref) return res.status(400).json({ error: "REF_REQUIRED" });
 
-        const user = await dbManager.users.findByEmail(ref) || await dbManager.users.findByHandle(ref);
+        const user = await CentralizadorDeGerenciadoresDeDados.users.findByEmail(ref) || await CentralizadorDeGerenciadoresDeDados.users.findByHandle(ref);
         
         if (user && user.marketingConfig?.pixelId) {
             return res.json({ 

@@ -1,5 +1,5 @@
 
-import { dbManager } from '../../../../databaseManager.js';
+import { CentralizadorDeGerenciadoresDeDados } from '../../database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * GET /api/admin/execute/stats/security
@@ -15,7 +15,7 @@ export default async (req, res) => {
             FROM reports
         `;
 
-        const result = await dbManager.query(sqlSecurity);
+        const result = await CentralizadorDeGerenciadoresDeDados.query(sqlSecurity);
         const r = result.rows[0];
 
         res.json({

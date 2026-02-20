@@ -1,6 +1,6 @@
 
 import { SchemaBootstrapper } from './database/SchemaBootstrapper.js';
-import { RepositoryHub } from './database/RepositoryHub.js';
+import { CentralizadorDeGerenciadoresDeDados } from './database/CentralizadorDeGerenciadoresDeDados.js';
 
 /**
  * dbManager
@@ -16,6 +16,6 @@ export const dbManager = {
         return await SchemaBootstrapper.run();
     },
 
-    // Acesso direto aos repositórios via delegação (Hub de Dados)
-    ...RepositoryHub
+    // Acesso direto aos gerenciadores de dados via delegação (Hub de Dados)
+    ...CentralizadorDeGerenciadoresDeDados
 };
