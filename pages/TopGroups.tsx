@@ -6,9 +6,9 @@ import { Group } from '../types';
 import { useGroupRanking } from '../hooks/useGroupRanking';
 
 // Subcomponentes Modulares
-import { RankingTabs } from '../features/ranking/Componentes/RankingTabs';
-import { RankingPodium } from '../features/ranking/Componentes/RankingPodium';
-import { RankingListItem } from '../features/ranking/Componentes/RankingListItem';
+import { RankingTabs } from '../Componentes/ComponentesDeRanking/Componentes/RankingTabs';
+import { RankingPodium } from '../Componentes/ComponentesDeRanking/Componentes/RankingPodium';
+import { RankingListItem } from '../Componentes/ComponentesDeRanking/Componentes/RankingListItem';
 
 export const TopGroups: React.FC = () => {
   const navigate = useNavigate();
