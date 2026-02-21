@@ -10,8 +10,8 @@ import { currencyService, ConversionResult } from '../ServiçosDoFrontend/curren
 import { NotificationItem, Group } from '../types';
 import { db } from '@/database';
 import { Footer } from '../Componentes/layout/Footer';
-import { FilterBar } from '../Componentes/notifications/FilterBar';
-import { NotificationCard } from '../Componentes/notifications/NotificationCard';
+import { FilterBar } from '../Componentes/ComponentesDeNotification/FilterBar';
+import { NotificationCard } from '../Componentes/ComponentesDeNotification/NotificationCard';
 import { MainHeader } from '../Componentes/layout/MainHeader';
 import { ExpiringVipNotificationCard } from '../Componentes/ComponentesDeNotifications/Componentes/ExpiringVipNotificationCard';
 

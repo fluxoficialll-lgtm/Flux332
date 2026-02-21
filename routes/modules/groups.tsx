@@ -1,6 +1,6 @@
 
 import React, { lazy } from 'react';
-import { ProtectedRoute } from '../../Componentes/auth/ProtectedRoute';
+import { ProtectedRoute } from '../../Componentes/ComponentesDeAuth/ProtectedRoute';
 
 const Groups = lazy(() => import('../../pages/Groups').then(m => ({ default: m.Groups })));
 const GroupChat = lazy(() => import('../../pages/GroupChat').then(m => ({ default: m.GroupChat })));

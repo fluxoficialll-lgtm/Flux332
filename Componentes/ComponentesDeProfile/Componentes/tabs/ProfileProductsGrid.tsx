@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { MarketplaceItem } from '../../../../types';
-import { ProductCard } from '../../../../Componentes/marketplace/ProductCard';
+import { ProductCard } from '../../../../Componentes/ComponentesDeMarketplace/ProductCard';
 
 interface ProfileProductsGridProps {
     products: MarketplaceItem[];

@@ -7,7 +7,7 @@ import { marketplaceService } from '../ServiçosDoFrontend/marketplaceService';
 import { Post, User, MarketplaceItem } from '../types';
 import { db } from '@/database';
 import { useModal } from '../Componentes/ModalSystem';
-import { FollowListModal } from '../Componentes/profile/FollowListModal';
+import { FollowListModal } from '../Componentes/ComponentesDeProfile/FollowListModal';
 import { FeedItem } from '../Componentes/ComponentesDeFeed/FeedItem';
 import { Footer } from '../Componentes/layout/Footer';
 import { AvatarPreviewModal } from '../Componentes/ui/AvatarPreviewModal';

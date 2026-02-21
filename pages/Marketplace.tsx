@@ -6,11 +6,11 @@ import { db } from '@/database';
 import { MarketplaceItem } from '../types';
 
 // Importação dos Componentes Isolados
-import { MarketplaceHeader } from '../Componentes/marketplace/MarketplaceHeader';
-import { MarketplaceSearchBar } from '../Componentes/marketplace/MarketplaceSearchBar';
-import { CategoryBar } from '../Componentes/marketplace/CategoryBar';
-import { ProductsGrid } from '../Componentes/marketplace/ProductsGrid';
-import { MarketplaceFAB } from '../Componentes/marketplace/MarketplaceFAB';
+import { MarketplaceHeader } from '../Componentes/ComponentesDeMarketplace/MarketplaceHeader';
+import { MarketplaceSearchBar } from '../Componentes/ComponentesDeMarketplace/MarketplaceSearchBar';
+import { CategoryBar } from '../Componentes/ComponentesDeMarketplace/CategoryBar';
+import { ProductsGrid } from '../Componentes/ComponentesDeMarketplace/ProductsGrid';
+import { MarketplaceFAB } from '../Componentes/ComponentesDeMarketplace/MarketplaceFAB';
 import { Footer } from '../Componentes/layout/Footer';
 
 export const Marketplace: React.FC = () => {

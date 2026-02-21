@@ -1,6 +1,6 @@
 
 import React, { lazy } from 'react';
-import { ProtectedRoute } from '../../Componentes/auth/ProtectedRoute';
+import { ProtectedRoute } from '../../Componentes/ComponentesDeAuth/ProtectedRoute';
 
 const Settings = lazy(() => import('../../pages/Settings').then(m => ({ default: m.Settings })));
 const SecurityLogin = lazy(() => import('../../pages/SecurityLogin').then(m => ({ default: m.SecurityLogin })));
