@@ -1,5 +1,6 @@
 import { ulid } from 'ulid';
 import { Buffer } from 'buffer';
+import { randomUUID } from 'crypto';
 
 /**
  * Prefixes para IDs únicos do sistema.
@@ -38,7 +39,7 @@ const ID_REGEX = new RegExp(`^([a-z]{3})_(${ULID_REGEX})$`);
  * @returns {string} Um novo ID formatado, como "usr_01H8XJWBWBAQ4Z4Q9Z4Q9Z4Q9".
  */
 export const gerarId = (prefix) => {
-  return `${prefix}_${ulid()}`;
+  return randomUUID();
 };
 
 /**

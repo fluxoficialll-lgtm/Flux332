@@ -1,6 +1,6 @@
 
 import { pool } from '../database/pool.js';
-import { gerarId, ID_PREFIX } from '../ServiçosBackEnd/FabricaDeIDS.js'; // Importar o gerador de ID
+import { randomUUID } from 'crypto'; // Importar o gerador de UUID padrão do Node.js
 
 const toEventObject = (row) => {
     if (!row) return null;
@@ -25,8 +25,8 @@ export const eventRepositorio = {
             timestamp
         } = event;
 
-        // CORREÇÃO: Gerar um UUID para o evento aqui dentro.
-        const newEventId = gerarId(ID_PREFIX.EVENTO); 
+        // CORREÇÃO APLICADA: Gerar um UUID padrão para o evento.
+        const newEventId = randomUUID(); 
 
         // O timestamp do cliente geralmente vem em milissegundos
         const clientTimestamp = new Date(timestamp);
