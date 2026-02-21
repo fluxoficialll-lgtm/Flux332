@@ -13,11 +13,11 @@ BEGIN
 END$$;
 
 CREATE TABLE IF NOT EXISTS transactions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id TEXT PRIMARY KEY,
     -- O usuário associado a esta transação (vendedor em uma venda, usuário em um saque)
-    user_id UUID NOT NULL REFERENCES users(id),
+    user_id TEXT NOT NULL REFERENCES users(id),
     -- Entidade relacionada, como um grupo, anúncio ou item do marketplace
-    related_entity_id UUID,
+    related_entity_id TEXT,
     -- Tipo da entidade relacionada
     related_entity_type VARCHAR(100),
 
