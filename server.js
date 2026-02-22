@@ -6,6 +6,9 @@ import fs from 'fs';
 import http from 'http';
 import { fileURLToPath } from 'url';
 
+// Importe a função de migração
+import { run as runMigrations } from './scripts/executar-migracoes.js';
+
 // Configurações Modulares
 import { initSocket } from './backend/config/socket.js';
 import { setupMiddlewares } from './backend/config/middleware.js';
@@ -29,35 +32,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const httpServer = http.createServer(app);
 
-// 1. Inicialização da Infraestrutura e Middlewares
+// Inicialização da Infraestrutura e Middlewares
 const io = initSocket(httpServer);
-setupMiddlewares(app, io); // Inclui o middleware de logging que injeta req.logger
-
-// 2. Inicialização do Banco de Dados e Tarefas de Manutenção
-db.init()
-    .then(() => {
-        LogDeOperacoes.log('DB_INIT', { message: 'Database system initialized successfully.' });
-
-        // Executa tarefas de auditoria e manutenção após a inicialização
-        setTimeout(() => {
-            // <<< SUAS FUNÇÕES SERÃO EXECUTADAS AQUI >>>
-            contarBancosDeDados();
-            auditorDoPostgreSQL.inspectDatabases();
-            
-            // Funções de integridade já existentes
-            IntegrityCheck.fixGroupMemberCounts();
-            IntegrityCheck.cleanupExpiredVip();
-        }, 5000);
-
-        // Tarefa de manutenção recorrente
-        setInterval(() => {
-            IntegrityCheck.fixGroupMemberCounts();
-        }, 1000 * 60 * 60);
-    })
-    .catch(err => {
-        LogDeOperacoes.fatal('DB_BOOT_ERROR', { error: err });
-        process.exit(1); // Encerra a aplicação se o DB não puder ser iniciado
-    });
+setupMiddlewares(app, io);
 
 // --- ROTAS DE API ---
 app.use('/api', apiRoutes);
@@ -94,14 +71,13 @@ app.use('/api', (req, res) => {
 // Tratamento global de erros da API
 app.use((err, req, res, next) => {
     if (req.path.startsWith('/api')) {
-        // Usa o logger da requisição para rastreabilidade completa
-        req.logger.error('GLOBAL_API_ERROR', { 
+        req.logger.error('GLOBAL_API_ERROR', {
             error: { message: err.message, stack: err.stack },
             path: req.path
         });
-        return res.status(500).json({ 
-            error: 'Erro interno no servidor.', 
-            traceId: req.traceId 
+        return res.status(500).json({
+            error: 'Erro interno no servidor.',
+            traceId: req.traceId
         });
     }
     next(err);
@@ -120,14 +96,11 @@ app.get('*', (req, res) => {
 
 // Tratamento final de erros (Global Catch-All)
 app.use((err, req, res, next) => {
-    const logger = req.logger || LogDeOperacoes; // Usa o logger da requisição se disponível
+    const logger = req.logger || LogDeOperacoes;
     const traceId = req.traceId || 'untraced-error';
 
     logger.error('GLOBAL_UNHANDLED_ERROR', {
-        error: {
-            message: err.message,
-            stack: err.stack
-        },
+        error: { message: err.message, stack: err.stack },
         path: req.path,
         method: req.method,
         traceId: traceId
@@ -143,6 +116,42 @@ app.use((err, req, res, next) => {
     });
 });
 
-httpServer.listen(PORT, '0.0.0.0', () => {
-    LogDeOperacoes.log('SERVER_START', { port: PORT, env: process.env.NODE_ENV });
-});
+// Função de inicialização da aplicação
+const startApp = async () => {
+    try {
+        // 1. Executar as migrações do banco de dados
+        await runMigrations();
+        LogDeOperacoes.log('MIGRATION_SUCCESS', { message: 'Migrações do banco de dados aplicadas com sucesso.' });
+
+        // 2. Inicializar o sistema de banco de dados
+        await db.init();
+        LogDeOperacoes.log('DB_INIT', { message: 'Database system initialized successfully.' });
+
+        // 3. Agendar tarefas de manutenção (não bloqueiam a inicialização)
+        setTimeout(() => {
+            contarBancosDeDados();
+            auditorDoPostgreSQL.inspectDatabases();
+            IntegrityCheck.fixGroupMemberCounts();
+            IntegrityCheck.cleanupExpiredVip();
+        }, 5000);
+
+        setInterval(() => {
+            IntegrityCheck.fixGroupMemberCounts();
+        }, 1000 * 60 * 60);
+
+        // 4. Iniciar o servidor HTTP
+        httpServer.listen(PORT, '0.0.0.0', () => {
+            LogDeOperacoes.log('SERVER_START', { port: PORT, env: process.env.NODE_ENV });
+        });
+
+    } catch (error) {
+        LogDeOperacoes.fatal('APP_STARTUP_FAILURE', {
+            error: { message: error.message, stack: error.stack },
+            reason: 'Falha crítica durante a inicialização da aplicação.'
+        });
+        process.exit(1);
+    }
+};
+
+// Iniciar a aplicação
+startApp();
