@@ -1,175 +1,27 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
-import { groupService } from '../ServiçosDoFrontend/groupService';
-import { Group } from '../types';
+import React from 'react';
+import { useLimitAndControl } from '../hooks/useLimitAndControl';
 
 export const LimitAndControl: React.FC = () => {
-  const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const [group, setGroup] = useState<Group | null>(null);
-  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
-
-  // --- State ---
-  
-  // Members Stats & Limits
-  const [currentMembers, setCurrentMembers] = useState(0); 
-  const [memberLimit, setMemberLimit] = useState<number | ''>(''); 
-
-  // Message Control
-  const [onlyAdminsPost, setOnlyAdminsPost] = useState(false);
-  const [msgSlowMode, setMsgSlowMode] = useState(false);
-  const [msgSlowModeInterval, setMsgSlowModeInterval] = useState('30'); 
-
-  // Entry Control
-  const [approveMembers, setApproveMembers] = useState(false);
-  const [joinSlowMode, setJoinSlowMode] = useState(false);
-  const [joinSlowModeInterval, setJoinSlowModeInterval] = useState('60'); 
-
-  // Content Filter
-  const [forbiddenWords, setForbiddenWords] = useState<string[]>([]);
-  const [newWord, setNewWord] = useState('');
-
-  // Action Modal State
-  const [actionType, setActionType] = useState<'kick' | 'ban' | 'promote' | 'demote' | null>(null);
-  const [userSearchTerm, setUserSearchTerm] = useState('');
-  
-  // Real User List for Actions
-  const [userList, setUserList] = useState<{ id: string, name: string, username: string, role: string }[]>([]);
-
-  useEffect(() => {
-      const email = authService.getCurrentUserEmail();
-      setCurrentUserEmail(email);
-
-      if (id) {
-          const foundGroup = groupService.getGroupById(id);
-          if (foundGroup) {
-              setGroup(foundGroup);
-              
-              // Initialize settings from group config
-              if (foundGroup.settings) {
-                  if(foundGroup.settings.memberLimit) setMemberLimit(foundGroup.settings.memberLimit);
-                  if(foundGroup.settings.onlyAdminsPost) setOnlyAdminsPost(foundGroup.settings.onlyAdminsPost);
-                  if(foundGroup.settings.msgSlowMode) setMsgSlowMode(foundGroup.settings.msgSlowMode);
-                  if(foundGroup.settings.msgSlowModeInterval) setMsgSlowModeInterval(foundGroup.settings.msgSlowModeInterval.toString());
-                  if(foundGroup.settings.approveMembers) setApproveMembers(foundGroup.settings.approveMembers);
-                  if(foundGroup.settings.joinSlowMode) setJoinSlowMode(foundGroup.settings.joinSlowMode);
-                  if(foundGroup.settings.joinSlowModeInterval) setJoinSlowModeInterval(foundGroup.settings.joinSlowModeInterval.toString());
-                  if(foundGroup.settings.forbiddenWords) setForbiddenWords(foundGroup.settings.forbiddenWords);
-              }
-
-              // Load real members
-              const members = groupService.getGroupMembers(id);
-              setCurrentMembers(members.length);
-
-              // Populate user list for actions
-              // Fix: Changed 'admins' to 'adminIds' and used UUIDs for check
-              const formatted = members.map(u => {
-                  const isAdmin = foundGroup.adminIds?.includes(u.id) || foundGroup.creatorId === u.id;
-                  return {
-                      id: u.id,
-                      name: u.profile?.nickname || 'Usuário',
-                      username: u.profile?.name ? `@${u.profile.name}` : '@user',
-                      role: u.id === foundGroup.creatorId ? 'Dono' : (isAdmin ? 'Admin' : 'Membro')
-                  };
-              });
-              setUserList(formatted);
-          }
-      }
-  }, [id]);
-
-  // Reset search when modal opens/closes
-  useEffect(() => {
-      if (!actionType) {
-          setUserSearchTerm('');
-      }
-  }, [actionType]);
-
-  // --- Handlers ---
-
-  const handleAddWord = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (newWord.trim() && !forbiddenWords.includes(newWord.trim().toLowerCase())) {
-          setForbiddenWords([...forbiddenWords, newWord.trim().toLowerCase()]);
-          setNewWord('');
-      }
-  };
-
-  const removeWord = (wordToRemove: string) => {
-      setForbiddenWords(forbiddenWords.filter(w => w !== wordToRemove));
-  };
-
-  const handleMemberAction = (userId: string, userName: string) => {
-      if (!actionType || !group) return;
-      
-      // PROTECTION: Cannot affect the owner
-      if (userId === group.creatorId) {
-          alert("Não é possível realizar ações contra o Dono do grupo.");
-          return;
-      }
-
-      // PROTECTION: Cannot affect self
-      const currentUserId = authService.getCurrentUserId();
-      if (userId === currentUserId) {
-          alert("Você não pode realizar esta ação em si mesmo aqui.");
-          return;
-      }
-
-      const actionMap = {
-          'kick': 'expulso',
-          'ban': 'banido',
-          'promote': 'promovido a Admin',
-          'demote': 'rebaixado para Membro'
-      };
-      
-      if (actionType === 'kick') {
-          groupService.removeMember(group.id, userId);
-          setUserList(prev => prev.filter(u => u.id !== userId));
-          setCurrentMembers(prev => prev - 1);
-      } else if (actionType === 'ban') {
-          groupService.banMember(group.id, userId);
-          setUserList(prev => prev.filter(u => u.id !== userId));
-          setCurrentMembers(prev => prev - 1);
-      } else if (actionType === 'promote') {
-          groupService.promoteMember(group.id, userId);
-          setUserList(prev => prev.map(u => u.id === userId ? { ...u, role: 'Admin' } : u));
-      } else if (actionType === 'demote') {
-          groupService.demoteMember(group.id, userId);
-          setUserList(prev => prev.map(u => u.id === userId ? { ...u, role: 'Membro' } : u));
-      }
-
-      alert(`${userName} foi ${actionMap[actionType]} com sucesso.`);
-      setActionType(null);
-  };
-
-  const handleSave = () => {
-    if (group) {
-        const updatedGroup: Group = {
-            ...group,
-            settings: {
-                memberLimit: memberLimit ? Number(memberLimit) : undefined,
-                onlyAdminsPost,
-                msgSlowMode,
-                msgSlowModeInterval: Number(msgSlowModeInterval),
-                approveMembers,
-                joinSlowMode: !group.isPrivate ? joinSlowMode : false, // Only save true if public
-                joinSlowModeInterval: Number(joinSlowModeInterval),
-                forbiddenWords
-            }
-        };
-        
-        groupService.updateGroup(updatedGroup);
-        alert("Configurações salvas com sucesso!");
-        navigate(-1);
-    }
-  };
-
-  // Filter logic
-  const filteredUsers = userList.filter(user => 
-      user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-      user.username.toLowerCase().includes(userSearchTerm.toLowerCase())
-  );
+    const {
+        group,
+        handleBack,
+        handleSave,
+        currentMembers,
+        memberLimit, setMemberLimit,
+        onlyAdminsPost, setOnlyAdminsPost,
+        msgSlowMode, setMsgSlowMode,
+        msgSlowModeInterval, setMsgSlowModeInterval,
+        approveMembers, setApproveMembers,
+        joinSlowMode, setJoinSlowMode,
+        joinSlowModeInterval, setJoinSlowModeInterval,
+        forbiddenWords, removeWord,
+        newWord, setNewWord, handleAddWord,
+        actionType, setActionType,
+        userSearchTerm, setUserSearchTerm,
+        filteredUsers,
+        handleMemberAction
+    } = useLimitAndControl();
 
   return (
     <div className="h-[100dvh] bg-[radial-gradient(circle_at_top_left,_#0c0f14,_#0a0c10)] text-white font-['Inter'] flex flex-col">
@@ -217,7 +69,6 @@ export const LimitAndControl: React.FC = () => {
         .label-main { font-size: 16px; font-weight: 500; color: #fff; margin-bottom: 4px; }
         .label-sub { font-size: 13px; color: #888; line-height: 1.3; }
 
-        /* Inputs inside cards */
         .card-input {
             background: #1a1e26; border: 1px solid rgba(255,255,255,0.1);
             color: #fff; padding: 10px; border-radius: 8px; outline: none;
@@ -225,7 +76,6 @@ export const LimitAndControl: React.FC = () => {
         }
         .card-input:focus { border-color: #00c2ff; }
 
-        /* Switch Style */
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 24px; }
@@ -233,7 +83,6 @@ export const LimitAndControl: React.FC = () => {
         input:checked + .slider { background-color: #00c2ff; }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        /* Actions Grid */
         .actions-grid {
             display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 16px;
         }
@@ -251,7 +100,6 @@ export const LimitAndControl: React.FC = () => {
         .btn-promote { color: #00c2ff; border-color: rgba(0, 194, 255, 0.3); }
         .btn-demote { color: #aaa; border-color: #555; }
 
-        /* Tags / Chips */
         .tags-container {
             display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
         }
@@ -269,7 +117,6 @@ export const LimitAndControl: React.FC = () => {
         }
         .save-btn:hover { background: #0099cc; transform: translateY(-1px); }
 
-        /* Simple Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); z-index: 50; display: flex; align-items: center; justify-content: center;
@@ -281,7 +128,6 @@ export const LimitAndControl: React.FC = () => {
             display: flex; flex-direction: column; max-height: 80vh;
         }
         
-        /* Search in Modal */
         .modal-search-wrapper {
             position: relative; margin-bottom: 15px;
         }
@@ -308,7 +154,7 @@ export const LimitAndControl: React.FC = () => {
       `}</style>
 
       <header>
-        <button onClick={() => navigate(-1)} aria-label="Voltar">
+        <button onClick={handleBack} aria-label="Voltar">
             <i className="fa-solid fa-arrow-left"></i>
         </button>
         <h1>Limite e Controle</h1>
@@ -482,7 +328,7 @@ export const LimitAndControl: React.FC = () => {
 
       </main>
 
-      {/* MOCK MODAL FOR ACTIONS */}
+      {/* MODAL PARA AÇÕES */}
       {actionType && (
           <div className="modal-overlay" onClick={() => setActionType(null)}>
               <div className="modal-box" onClick={e => e.stopPropagation()}>
@@ -490,7 +336,6 @@ export const LimitAndControl: React.FC = () => {
                       Selecione para {actionType === 'kick' ? 'Expulsar' : (actionType === 'ban' ? 'Banir' : (actionType === 'promote' ? 'Promover' : 'Rebaixar'))}
                   </h3>
                   
-                  {/* SEARCH INPUT */}
                   <div className="modal-search-wrapper">
                       <i className="fa-solid fa-magnifying-glass"></i>
                       <input 

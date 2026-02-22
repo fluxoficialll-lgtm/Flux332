@@ -1,35 +1,14 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
-import { preferenceService } from '../ServiçosDoFrontend/real/preferenceService';
-
-export const LANGUAGES = [
-    { id: 'pt', label: 'Português', flag: '🇧🇷', nativeName: 'Brasil' },
-    { id: 'en', label: 'English', flag: '🇺🇸', nativeName: 'United States' },
-    { id: 'es', label: 'Español', flag: '🇪🇸', nativeName: 'España' }
-];
+import { useLanguageSettings } from '../hooks/useLanguageSettings';
 
 export const LanguageSettings: React.FC = () => {
-    const navigate = useNavigate();
-    const user = authService.getCurrentUser();
-    const currentLangId = user?.language || localStorage.getItem('app_language') || 'pt';
-
-    const handleLanguageSelect = async (langId: string) => {
-        if (user?.email) {
-            await preferenceService.updateLanguage(user.email, langId);
-            // Em produção, aqui dispararíamos a atualização do i18next ou similar
-            navigate(-1);
-        }
-    };
-
-    const handleBack = () => {
-        if (window.history.state && window.history.state.idx > 0) {
-            navigate(-1);
-        } else {
-            navigate('/settings');
-        }
-    };
+    const {
+        currentLangId,
+        handleLanguageSelect,
+        handleBack,
+        languages
+    } = useLanguageSettings();
 
     return (
         <div className="h-screen bg-[radial-gradient(circle_at_top_left,_#0c0f14,_#0a0c10)] text-white font-['Inter'] flex flex-col overflow-hidden">
@@ -131,7 +110,7 @@ export const LanguageSettings: React.FC = () => {
                 </div>
 
                 <div className="lang-list">
-                    {LANGUAGES.map((lang) => (
+                    {languages.map((lang) => (
                         <div 
                             key={lang.id}
                             className={`lang-card ${currentLangId === lang.id ? 'active' : ''}`}

@@ -1,40 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-// Import chatService from the service and ChatData from types
-import { chatService } from '../ServiçosDoFrontend/chatService';
-import { ChatData } from '../types';
+import React from 'react';
+import { useBlockedUsers } from '../hooks/useBlockedUsers';
 
 export const BlockedUsers: React.FC = () => {
-  const navigate = useNavigate();
-  const [blockedChats, setBlockedChats] = useState<ChatData[]>([]);
-
-  useEffect(() => {
-    loadBlockedUsers();
-  }, []);
-
-  const loadBlockedUsers = () => {
-    const allChatsMap = chatService.getAllChats();
-    const allChats = Object.values(allChatsMap);
-    const blocked = allChats.filter(chat => chat.isBlocked);
-    setBlockedChats(blocked);
-  };
-
-  const handleUnblock = (chatId: string | number) => {
-    if (window.confirm("Deseja realmente desbloquear este usuário?")) {
-      chatService.toggleBlock(chatId.toString());
-      // Remove form local state
-      setBlockedChats(prev => prev.filter(chat => chat.id.toString() !== chatId.toString()));
-    }
-  };
-
-  const handleBack = () => {
-      if (window.history.state && window.history.state.idx > 0) {
-          navigate(-1);
-      } else {
-          navigate('/settings');
-      }
-  };
+  const { blockedChats, handleUnblock, handleBack } = useBlockedUsers();
 
   return (
     <div className="h-screen bg-[radial-gradient(circle_at_top_left,_#0c0f14,_#0a0c10)] text-white font-['Inter'] flex flex-col overflow-hidden">

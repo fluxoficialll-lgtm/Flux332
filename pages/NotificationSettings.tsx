@@ -1,9 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
-import { NotificationSettings as INotificationSettings } from '../types';
-import { useModal } from '../Componentes/ModalSystem';
+import React from 'react';
+import { useNotificationSettings } from '../hooks/useNotificationSettings';
 
 // Subcomponentes Modulares
 import { GlobalPauseCard } from '../Componentes/ComponentesDeNotifications/Componentes/settings/GlobalPauseCard';
@@ -13,58 +10,22 @@ import { BusinessSection } from '../Componentes/ComponentesDeNotifications/Compo
 import { EmailPreferencesSection } from '../Componentes/ComponentesDeNotifications/Componentes/settings/EmailPreferencesSection';
 
 export const NotificationSettings: React.FC = () => {
-    const navigate = useNavigate();
-    const { showAlert } = useModal();
-    
-    const defaultSettings: INotificationSettings = {
-        pauseAll: false,
-        likes: true,
-        comments: true,
-        followers: true,
-        mentions: true,
-        messages: true,
-        groups: true,
-        marketplace: true,
-        emailUpdates: true,
-        emailDigest: true
-    };
+    const {
+        settings,
+        isSyncing,
+        initialLoading,
+        toggleSetting,
+        handleBack
+    } = useNotificationSettings();
 
-    const [settings, setSettings] = useState<INotificationSettings>(defaultSettings);
-    const [isSyncing, setIsSyncing] = useState(false);
-
-    useEffect(() => {
-        const user = authService.getCurrentUser();
-        if (user && user.notificationSettings) {
-            setSettings({ ...defaultSettings, ...user.notificationSettings });
-        }
-    }, []);
-
-    const toggleSetting = async (key: keyof INotificationSettings) => {
-        const newSettings = { ...settings, [key]: !settings[key] };
-        
-        // Optimistic UI update
-        setSettings(newSettings);
-        setIsSyncing(true);
-
-        try {
-            await authService.updateNotificationSettings(newSettings);
-            // Sincronização silenciosa, só avisamos se houver erro crítico
-            setIsSyncing(false);
-        } catch (error) {
-            setIsSyncing(false);
-            // Revert on error
-            setSettings(settings);
-            showAlert("Erro de Sincronização", "Não foi possível salvar suas preferências na nuvem. Verifique sua conexão.");
-        }
-    };
-
-    const handleBack = () => {
-        if (window.history.state && window.history.state.idx > 0) {
-            navigate(-1);
-        } else {
-            navigate('/settings');
-        }
-    };
+    // Mostra um indicador de carregamento enquanto as configurações iniciais são buscadas
+    if (initialLoading) {
+        return (
+            <div className="h-screen bg-[radial-gradient(circle_at_top_left,_#0c0f14,_#0a0c10)] text-white font-['Inter'] flex flex-col items-center justify-center">
+                <i className="fa-solid fa-circle-notch fa-spin text-2xl text-[#00c2ff]"></i>
+            </div>
+        );
+    }
 
     return (
         <div className="h-screen bg-[radial-gradient(circle_at_top_left,_#0c0f14,_#0a0c10)] text-white font-['Inter'] flex flex-col overflow-hidden">

@@ -1,97 +1,78 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
 import { groupService } from '../ServiçosDoFrontend/groupService';
-import { postService } from '../ServiçosDoFrontend/postService';
-import { Group } from '../types';
+import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
+import { fileService } from '../ServiçosDoFrontend/fileService';
 
 export const useCreatePublicGroup = () => {
   const navigate = useNavigate();
   const [groupName, setGroupName] = useState('');
   const [description, setDescription] = useState('');
-  const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [rawImage, setRawImage] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-
-  // Crop states
   const [isCropOpen, setIsCropOpen] = useState(false);
-  const [rawImage, setRawImage] = useState<string>('');
 
-  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setRawImage(ev.target?.result as string);
-        setIsCropOpen(true);
-      };
-      reader.readAsDataURL(file);
+  const handleCoverChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setRawImage(e.target?.result as string);
+            setIsCropOpen(true);
+        };
+        reader.readAsDataURL(file);
     }
   };
 
-  const handleCroppedImage = (croppedBase64: string) => {
-    setCoverImage(croppedBase64);
-    fetch(croppedBase64)
-      .then(res => res.blob())
-      .then(blob => {
-          const file = new File([blob], "group_cover.jpg", { type: "image/jpeg" });
-          setSelectedFile(file);
-      });
+  const handleCroppedImage = async (image: string) => {
+    setIsCropOpen(false);
+    setCoverImage(image);
   };
 
-  const handleBack = () => {
-      if (window.history.state && window.history.state.idx > 0) {
-          navigate(-1);
-      } else {
-          navigate('/create-group');
-      }
-  };
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!groupName) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isCreating) return;
     setIsCreating(true);
-    
     try {
-        const currentUserId = authService.getCurrentUserId();
-        const currentUserEmail = authService.getCurrentUserEmail();
-        
-        let finalCoverUrl = coverImage;
-        if (selectedFile) {
-            finalCoverUrl = await postService.uploadMedia(selectedFile, 'group_covers');
+        const creatorId = authService.getCurrentUserId();
+        if (!creatorId) throw new Error('User not authenticated');
+
+        let coverImageUrl = '';
+        if (coverImage) {
+            const blob = await fetch(coverImage).then(res => res.blob());
+            coverImageUrl = await fileService.upload(blob, `group-covers/${Date.now()}.png`);
         }
 
-        const newGroup: Group = {
-          id: Date.now().toString(),
-          name: groupName,
-          description: description,
-          coverImage: finalCoverUrl,
-          isVip: false,
-          isPrivate: false,
-          lastMessage: "Grupo público criado.",
-          time: "Agora",
-          creatorId: currentUserId || '',
-          creatorEmail: currentUserEmail || undefined,
-          memberIds: currentUserId ? [currentUserId] : [],
-          adminIds: currentUserId ? [currentUserId] : []
-        };
+        await groupService.createGroup({
+            name: groupName,
+            description,
+            creatorId,
+            coverImageUrl,
+            groupType: 'public'
+        });
 
-        await groupService.createGroup(newGroup);
         navigate('/groups');
-    } catch (e) {
-        alert("Erro ao criar grupo público.");
+    } catch (error) {
+        console.error("Failed to create group:", error);
     } finally {
         setIsCreating(false);
     }
   };
 
+  const handleBack = () => navigate('/create-group');
+
   return {
-    groupName, setGroupName,
-    description, setDescription,
+    groupName,
+    setGroupName,
+    description,
+    setDescription,
     coverImage,
     isCreating,
-    isCropOpen, setIsCropOpen,
+    isCropOpen,
+    setIsCropOpen,
     rawImage,
     handleCoverChange,
     handleCroppedImage,

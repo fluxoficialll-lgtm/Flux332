@@ -1,42 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { reelsService } from '../ServiçosDoFrontend/reelsService';
-import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
-import { Post } from '../types';
 
-type CategoryFilter = 'relevant' | 'recent' | 'watched' | 'unwatched' | 'liked';
+import React from 'react';
+import { useReelsSearch, CategoryFilter } from '../hooks/useReelsSearch';
 
 export const ReelsSearch: React.FC = () => {
-  const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, setActiveCategory] = useState<CategoryFilter>('relevant');
-  const [results, setResults] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [currentUserEmail, setCurrentUserEmail] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    const email = authService.getCurrentUserEmail();
-    if(email) setCurrentUserEmail(email);
-  }, []);
-
-  // Use Effect with Debounce for Search
-  useEffect(() => {
-    setLoading(true);
-    
-    const timeoutId = setTimeout(() => {
-        // Use the new Intelligent Search Algorithm from Service
-        const searchResults = reelsService.searchReels(
-            searchTerm, 
-            activeCategory, 
-            currentUserEmail
-        );
-        
-        setResults(searchResults);
-        setLoading(false);
-    }, 400); // 400ms debounce
-
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, activeCategory, currentUserEmail]);
+  const {
+    searchTerm, 
+    setSearchTerm, 
+    activeCategory, 
+    setActiveCategory, 
+    results, 
+    loading, 
+    currentUserEmail,
+    handleNavigate
+  } = useReelsSearch();
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#0c0f14,_#0a0c10)] text-white font-['Inter'] flex flex-col overflow-x-hidden">
@@ -140,7 +116,7 @@ export const ReelsSearch: React.FC = () => {
 
       <header>
         <div className="top-row">
-            <button className="back-btn" onClick={() => navigate('/reels')}><i className="fa-solid fa-arrow-left"></i></button>
+            <button className="back-btn" onClick={() => handleNavigate('/reels')}><i className="fa-solid fa-arrow-left"></i></button>
             <div className="search-input-wrapper">
                 <i className={`fa-solid ${loading ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'}`}></i>
                 <input 
@@ -199,7 +175,7 @@ export const ReelsSearch: React.FC = () => {
                         const isWatched = currentUserEmail && reel.viewedBy?.includes(currentUserEmail);
                         
                         return (
-                            <div key={reel.id} className="reel-card" onClick={() => navigate(`/reels/${reel.id}`)}>
+                            <div key={reel.id} className="reel-card" onClick={() => handleNavigate(`/reels/${reel.id}`)}>
                                 <video src={reel.video} muted playsInline loop onMouseOver={e => e.currentTarget.play()} onMouseOut={e => e.currentTarget.pause()} />
                                 
                                 {isWatched && (

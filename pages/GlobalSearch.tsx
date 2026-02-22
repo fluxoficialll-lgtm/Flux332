@@ -1,98 +1,49 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { relationshipService } from '../ServiçosDoFrontend/relationshipService';
-import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
-import { chatService } from '../ServiçosDoFrontend/chatService';
-import { User } from '../types';
-import { db } from '@/database';
+import React from 'react';
+import { useGlobalSearch } from '../hooks/useGlobalSearch';
 import { useModal } from '../Componentes/ModalSystem';
+import { User } from '../types';
+
+// A interface para o usuário enriquecido que vem do hook
+interface EnrichedUser extends User {
+  isMe: boolean;
+  canMessage: boolean;
+  followStatus: 'none' | 'requested' | 'following';
+  btnText: string;
+  btnClass: string;
+}
 
 export const GlobalSearch: React.FC = () => {
-  const navigate = useNavigate();
+  const {
+    searchTerm,
+    setSearchTerm,
+    filteredUsers,
+    loading,
+    processingId,
+    handleAction,
+    handleProfileClick,
+    handleMessageClick,
+    handleBack
+  } = useGlobalSearch();
+
   const { showAlert } = useModal();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [processingId, setProcessingId] = useState<string | null>(null);
-  
-  // Force update to reflect changes in UI
-  const [tick, setTick] = useState(0);
 
-  // Search Logic via API
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(async () => {
-        if (searchTerm.trim().length > 0) {
-            setLoading(true);
-            try {
-                // API Call instead of local filter
-                const results = await authService.searchUsers(searchTerm);
-                setFilteredUsers(results);
-            } catch (error) {
-                console.error("Search error", error);
-            } finally {
-                setLoading(false);
-            }
-        } else {
-            setFilteredUsers([]);
+  // Wrapper no componente para lidar com a interação do usuário (confirmação e alertas)
+  const onUserAction = async (user: EnrichedUser) => {
+    try {
+      // Se a ação for "deixar de seguir", peça confirmação
+      if (user.followStatus === 'following') {
+        if (window.confirm(`Deixar de seguir @${user.profile?.name}?`)) {
+          await handleAction(user);
         }
-    }, 300); // Debounce 300ms
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm]);
-
-  // Reactive Update Subscription
-  useEffect(() => {
-      const unsubRel = db.subscribe('relationships', () => {
-          setTick(prev => prev + 1);
-      });
-      return () => unsubRel();
-  }, []);
-
-  const handleAction = async (user: User) => {
-      const username = user.profile?.name;
-      if (!username || processingId) return;
-
-      setProcessingId(user.id);
-
-      try {
-          const status = relationshipService.isFollowing(username);
-          
-          if (status === 'none') {
-              await relationshipService.followUser(username);
-          } else {
-              if (window.confirm(`Deixar de seguir @${username}?`)) {
-                  await relationshipService.unfollowUser(username);
-              }
-          }
-          // The subscription handles tick update
-      } catch (error: any) {
-          console.error("[Search] Follow error:", error);
-          showAlert("Erro", error.message || "Falha ao processar solicitação.");
-      } finally {
-          setProcessingId(null);
-      }
-  };
-
-  const handleProfileClick = (username: string) => {
-      const cleanUsername = username.startsWith('@') ? username.substring(1) : username;
-      navigate(`/user/${cleanUsername}`);
-  };
-
-  const handleMessageClick = (user: User) => {
-      const currentUserEmail = authService.getCurrentUserEmail();
-      if (currentUserEmail && user.email) {
-          const chatId = chatService.getPrivateChatId(currentUserEmail, user.email);
-          navigate(`/chat/${chatId}`);
-      }
-  };
-
-  const handleBack = () => {
-      if (window.history.state && window.history.state.idx > 0) {
-          navigate(-1);
       } else {
-          navigate('/messages');
+        // Para outras ações (como seguir), execute diretamente
+        await handleAction(user);
       }
+    } catch (error: any) {
+      // Capture os erros lançados pelo hook e exiba um alerta
+      showAlert("Erro", error.message || "Falha ao processar a solicitação.");
+    }
   };
 
   return (
@@ -186,83 +137,65 @@ export const GlobalSearch: React.FC = () => {
 
       <main>
         <div className="search-container">
-            <div className="search-input-wrapper">
-                <i className={`fa-solid ${loading ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'}`}></i>
-                <input 
-                    type="text" 
-                    placeholder="Pesquisar por nome ou @..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    autoFocus
-                />
-            </div>
-            <div className="global-badge">
-                <i className="fa-solid fa-globe"></i> Pesquisa Global
-            </div>
+          <div className="search-input-wrapper">
+            <i className={`fa-solid ${loading ? 'fa-circle-notch fa-spin' : 'fa-magnifying-glass'}`}></i>
+            <input
+              type="text"
+              placeholder="Pesquisar por nome ou @..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="global-badge">
+            <i className="fa-solid fa-globe"></i> Pesquisa Global
+          </div>
         </div>
 
         <div className="user-list">
-            {filteredUsers.map(user => {
-                const username = user.profile?.name || 'unknown';
-                const status = relationshipService.isFollowing(username);
-                const isPrivate = user.profile?.isPrivate || false;
-                
-                const currentUserEmail = authService.getCurrentUserEmail();
-                const isMe = user.email === currentUserEmail;
-                const isProcessing = processingId === user.id;
+          {filteredUsers.map((user: EnrichedUser) => {
+            const username = user.profile?.name || 'unknown';
+            const isProcessing = processingId === user.id;
 
-                const canMessage = (!isPrivate || status === 'following') && !isMe;
-
-                let btnText = 'Seguir';
-                let btnClass = 'action-btn btn-follow';
-
-                if (status === 'requested') {
-                    btnText = 'Solicitado';
-                    btnClass = 'action-btn btn-requested';
-                } else if (status === 'following') {
-                    btnText = 'Seguindo';
-                    btnClass = 'action-btn btn-following';
-                }
-
-                return (
-                    <div key={user.email} className="user-item" onClick={() => handleProfileClick(username)}>
-                        {user.profile?.photoUrl ? (
-                            <img src={user.profile.photoUrl} className="user-avatar" alt={username} />
-                        ) : (
-                            <div className="user-avatar"><i className="fa-solid fa-user"></i></div>
-                        )}
-                        <div className="user-info">
-                            <span className="user-name">{user.profile?.nickname || user.profile?.name}</span>
-                            <span className="user-username">@{username}</span>
-                        </div>
-                        <div className="action-buttons">
-                            {canMessage && (
-                                <button 
-                                    className="msg-btn" 
-                                    onClick={(e) => { e.stopPropagation(); handleMessageClick(user); }}
-                                >
-                                    <i className="fa-solid fa-comment"></i>
-                                </button>
-                            )}
-                            {!isMe && (
-                                <button 
-                                    className={btnClass} 
-                                    onClick={(e) => { e.stopPropagation(); handleAction(user); }}
-                                    disabled={isProcessing}
-                                >
-                                    {isProcessing ? <i className="fa-solid fa-circle-notch fa-spin"></i> : btnText}
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                );
-            })}
-            
-            {filteredUsers.length === 0 && !loading && (
-                <div style={{textAlign:'center', color:'#777', padding:'30px'}}>
-                    {searchTerm ? 'Nenhum usuário encontrado.' : 'Digite para pesquisar em toda a rede.'}
+            return (
+              <div key={user.email} className="user-item" onClick={() => handleProfileClick(username)}>
+                {user.profile?.photoUrl ? (
+                  <img src={user.profile.photoUrl} className="user-avatar" alt={username} />
+                ) : (
+                  <div className="user-avatar"><i className="fa-solid fa-user"></i></div>
+                )}
+                <div className="user-info">
+                  <span className="user-name">{user.profile?.nickname || user.profile?.name}</span>
+                  <span className="user-username">@{username}</span>
                 </div>
-            )}
+                <div className="action-buttons">
+                  {user.canMessage && (
+                    <button
+                      className="msg-btn"
+                      onClick={(e) => { e.stopPropagation(); handleMessageClick(user); }}
+                    >
+                      <i className="fa-solid fa-comment"></i>
+                    </button>
+                  )}
+                  {!user.isMe && (
+                    <button
+                      className={user.btnClass}
+                      onClick={(e) => { e.stopPropagation(); onUserAction(user); }}
+                      disabled={isProcessing}
+                    >
+                      {isProcessing ? <i className="fa-solid fa-circle-notch fa-spin"></i> : user.btnText}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
+          {filteredUsers.length === 0 && !loading && (
+            <div style={{ textAlign: 'center', color: '#777', padding: '30px' }}>
+              {searchTerm ? 'Nenhum usuário encontrado.' : 'Digite para pesquisar em toda a rede.'}
+            </div>
+          )}
         </div>
       </main>
     </div>

@@ -1,27 +1,9 @@
 
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
+import React from 'react';
+import { useBanned } from '../hooks/useBanned';
 
 export const Banned: React.FC = () => {
-    const navigate = useNavigate();
-    const [reason, setReason] = useState('Violação das diretrizes da comunidade.');
-    const user = authService.getCurrentUser();
-
-    useEffect(() => {
-        if (user && user.isBanned) {
-            setReason(user.banReason || 'Violação das diretrizes da comunidade.');
-        } else if (user && !user.isBanned) {
-            navigate('/feed', { replace: true });
-        } else if (!user) {
-            navigate('/', { replace: true });
-        }
-    }, [user, navigate]);
-
-    const handleLogout = () => {
-        authService.logout();
-        navigate('/', { replace: true });
-    };
+    const { reason, handleLogout } = useBanned();
 
     return (
         <div className="h-screen w-full flex flex-col items-center justify-center bg-[#050505] text-white font-['Inter'] p-6 relative overflow-hidden">

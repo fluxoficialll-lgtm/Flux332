@@ -1,48 +1,22 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
-import { Group } from '../types';
-import { useGroupRanking } from '../hooks/useGroupRanking';
+import { useTopGroups } from '../hooks/useTopGroups';
 
-// Subcomponentes Modulares
+// Subcomponentes Modulares de UI
 import { RankingTabs } from '../Componentes/ComponentesDeRanking/Componentes/RankingTabs';
 import { RankingPodium } from '../Componentes/ComponentesDeRanking/Componentes/RankingPodium';
 import { RankingListItem } from '../Componentes/ComponentesDeRanking/Componentes/RankingListItem';
 
 export const TopGroups: React.FC = () => {
-  const navigate = useNavigate();
-  const currentUserId = authService.getCurrentUserId();
-  
-  // Utiliza o novo hook que centraliza toda a inteligência e reatividade
-  const { groups, loading, activeTab } = useGroupRanking();
-
-  const handleTabChange = (newTab: 'public' | 'private' | 'vip') => {
-      if (newTab === activeTab) return;
-      navigate(`/top-groups/${newTab}`);
-  };
-
-  const handleGroupAction = (group: Group) => {
-      if (!currentUserId) {
-          alert('Você precisa estar logado para acessar os grupos.');
-          return;
-      }
-      const isMember = group.memberIds?.includes(currentUserId);
-      if (isMember) {
-          navigate(`/group-chat/${group.id}`);
-      } else {
-          if (group.isVip) navigate(`/vip-group-sales/${group.id}`);
-          else navigate(`/group-landing/${group.id}`);
-      }
-  };
-
-  const handleBack = () => {
-    if (window.history.state && window.history.state.idx > 0) {
-        navigate(-1);
-    } else {
-        navigate('/groups');
-    }
-  };
+  const {
+    groups,
+    loading,
+    activeTab,
+    currentUserId,
+    handleTabChange,
+    handleGroupAction,
+    handleBack
+  } = useTopGroups();
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#0c0f14,_#0a0c10)] text-white font-['Inter'] flex flex-col overflow-x-hidden">

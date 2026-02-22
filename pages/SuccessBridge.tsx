@@ -1,72 +1,9 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { groupService } from '../ServiçosDoFrontend/groupService';
-import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
-import { RedirectResolver } from '../ServiçosDoFrontend/sync/RedirectResolver';
-import { PurchaseIntention } from '../ServiçosDoFrontend/sync/PurchaseIntention';
-import { db } from '../database';
+import React from 'react';
+import { useSuccessBridge } from '../hooks/useSuccessBridge';
 
 export const SuccessBridge: React.FC = () => {
-    const navigate = useNavigate();
-    const { id } = useParams<{ id: string }>();
-    const [status, setStatus] = useState<'validating' | 'ready' | 'error'>('validating');
-    const [message, setMessage] = useState('Validando transação...');
-    const [group, setGroup] = useState<any>(null);
-
-    const checkAccess = useCallback(async () => {
-        if (!id) return;
-        
-        const userId = authService.getCurrentUserId();
-        if (!userId) {
-            // Se perdeu a sessão, manda pro login mas mantém a intenção
-            PurchaseIntention.set(id);
-            navigate('/register');
-            return;
-        }
-
-        try {
-            const foundGroup = await groupService.fetchGroupById(id);
-            if (!foundGroup) throw new Error("Grupo não encontrado");
-            setGroup(foundGroup);
-
-            // Verifica se o VIP já foi concedido no banco de dados local (alimentado pelo sync/webhook)
-            const isVipActive = db.vipAccess.check(userId, id);
-            
-            if (isVipActive) {
-                setStatus('ready');
-                setMessage('Acesso Liberado!');
-                // Limpa a intenção pois o fluxo foi concluído
-                PurchaseIntention.clear();
-            } else {
-                // Polling messages para UX
-                const steps = [
-                    "Sincronizando banco de dados...",
-                    "Preparando sua licença VIP...",
-                    "Configurando canais de conteúdo...",
-                    "Quase pronto..."
-                ];
-                setMessage(steps[Math.floor(Math.random() * steps.length)]);
-            }
-        } catch (e) {
-            console.error(e);
-            setStatus('error');
-            setMessage('Falha ao validar acesso.');
-        }
-    }, [id, navigate]);
-
-    useEffect(() => {
-        const interval = setInterval(checkAccess, 2500);
-        checkAccess(); // Check imediato
-        return () => clearInterval(interval);
-    }, [checkAccess]);
-
-    const handleEnter = () => {
-        if (group) {
-            const path = RedirectResolver.resolveGroupEntryPath(group);
-            navigate(path, { replace: true });
-        }
-    };
+    const { status, message, handleEnter } = useSuccessBridge();
 
     return (
         <div className="min-h-screen bg-[#0c0f14] text-white font-['Inter'] flex flex-col items-center justify-center p-8 text-center overflow-hidden">

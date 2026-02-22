@@ -1,98 +1,22 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
-import { db } from '@/database';
-import { SecuritySettings as ISecuritySettings, UserSession } from '../types';
+import React from 'react';
+import { useSecurityLogin } from '../hooks/useSecurityLogin';
 
 export const SecurityLogin: React.FC = () => {
-  const navigate = useNavigate();
-  
-  const [settings, setSettings] = useState<ISecuritySettings>({
-      saveLoginInfo: true
-  });
-
-  // Password Change State
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  // Sessions
-  const [sessions, setSessions] = useState<UserSession[]>([]);
-
-  useEffect(() => {
-      const user = authService.getCurrentUser();
-      if (user && user.securitySettings) {
-          setSettings(user.securitySettings);
-      }
-      
-      // Load sessions initial
-      setSessions(authService.getUserSessions());
-
-      // Subscribe to user changes to update sessions in real-time
-      const unsubscribe = db.subscribe('users', () => {
-          setSessions(authService.getUserSessions());
-      });
-      return () => unsubscribe();
-  }, []);
-
-  const toggleSetting = (key: keyof ISecuritySettings) => {
-      const newSettings = { ...settings, [key]: !settings[key] };
-      setSettings(newSettings);
-      authService.updateSecuritySettings(newSettings);
-  };
-
-  const handleChangePassword = async (e: React.FormEvent) => {
-      e.preventDefault();
-      setError('');
-      setSuccessMsg('');
-      setLoading(true);
-
-      if (newPassword.length < 6) {
-          setError("A nova senha deve ter pelo menos 6 caracteres.");
-          setLoading(false);
-          return;
-      }
-      if (newPassword !== confirmPassword) {
-          setError("As novas senhas não coincidem.");
-          setLoading(false);
-          return;
-      }
-
-      try {
-          await authService.changePassword(currentPassword, newPassword);
-          setSuccessMsg("Senha alterada com sucesso!");
-          setCurrentPassword('');
-          setNewPassword('');
-          setConfirmPassword('');
-      } catch (err: any) {
-          setError(err.message || "Erro ao alterar senha.");
-      } finally {
-          setLoading(false);
-      }
-  };
-
-  const handleRevokeOthers = async () => {
-      if(window.confirm("Deseja desconectar todos os outros dispositivos?")) {
-          await authService.revokeOtherSessions();
-          // Local state update is handled by subscription
-      }
-  };
-
-  const formatDate = (timestamp: number) => {
-      return new Date(timestamp).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-  };
-
-  const handleBack = () => {
-      if (window.history.state && window.history.state.idx > 0) {
-          navigate(-1);
-      } else {
-          navigate('/settings');
-      }
-  };
+  const {
+    settings,
+    toggleSetting,
+    currentPassword, setCurrentPassword,
+    newPassword, setNewPassword,
+    confirmPassword, setConfirmPassword,
+    error, successMsg,
+    loading,
+    handleChangePassword,
+    sessions,
+    handleRevokeOthers,
+    formatDate,
+    handleBack
+  } = useSecurityLogin();
 
   return (
     <div className="h-screen bg-[radial-gradient(circle_at_top_left,_#0c0f14,_#0a0c10)] text-white font-['Inter'] flex flex-col overflow-hidden">

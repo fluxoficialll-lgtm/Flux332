@@ -1,42 +1,18 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { relationshipService } from '../ServiçosDoFrontend/relationshipService';
-import { User } from '../types';
+import React from 'react';
+import { useLeaderboard } from '../hooks/useLeaderboard';
 import { PodiumItem } from '../Componentes/ComponentesDeLeaderboard/Componentes/PodiumItem';
 import { LeaderboardListItem } from '../Componentes/ComponentesDeLeaderboard/Componentes/LeaderboardListItem';
 
-interface RankedUser extends User {
-    followerCount: number;
-}
-
 export const Leaderboard: React.FC = () => {
-  const navigate = useNavigate();
-  const [rankedUsers, setRankedUsers] = useState<RankedUser[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadData = async () => {
-        const ranked = await relationshipService.getTopCreators();
-        setRankedUsers(ranked);
-        setLoading(false);
-    };
-
-    loadData();
-  }, []);
-
-  const handleUserClick = (username: string) => {
-      if (!username) return;
-      navigate(`/user/${username}`);
-  };
-
-  const handleBack = () => {
-    if (window.history.state && window.history.state.idx > 0) {
-        navigate(-1);
-    } else {
-        navigate('/profile');
-    }
-  };
+  const {
+    rankedUsers,
+    loading,
+    handleUserClick,
+    handleBack,
+    topThree,
+    leaderboardList
+  } = useLeaderboard();
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#0c0f14,_#0a0c10)] text-white font-['Inter'] flex flex-col overflow-x-hidden">
@@ -106,29 +82,6 @@ export const Leaderboard: React.FC = () => {
         .podium-count { font-size: 12px; color: #aaa; margin-top: 2px; }
 
         .rank-list { display: flex; flex-direction: column; gap: 10px; }
-        .rank-item {
-            display: flex; align-items: center; padding: 15px; background: rgba(255,255,255,0.03);
-            border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer;
-            transition: background 0.2s;
-        }
-        .rank-item:hover { background: rgba(255,255,255,0.08); }
-        
-        .rank-number {
-            font-size: 16px; font-weight: 700; color: #555; width: 30px; text-align: center; margin-right: 10px;
-        }
-        
-        .list-avatar {
-            width: 45px; height: 45px; border-radius: 50%; object-fit: cover; margin-right: 15px; border: 1px solid #333;
-        }
-        
-        .list-info { flex-grow: 1; display: flex; flex-direction: column; }
-        .list-name { font-weight: 600; font-size: 15px; color: #fff; }
-        .list-username { font-size: 12px; color: #888; }
-        
-        .list-count {
-            font-weight: 700; font-size: 14px; color: #fff; background: rgba(0,194,255,0.1);
-            padding: 4px 10px; border-radius: 20px; color: #00c2ff;
-        }
 
         .empty-state {
             text-align: center; color: #555; margin-top: 50px;
@@ -150,45 +103,32 @@ export const Leaderboard: React.FC = () => {
             </div>
         ) : (
             <>
-                {rankedUsers.length >= 3 && (
+                {topThree.length >= 3 && (
                     <div className="top-three-container">
-                        <PodiumItem 
-                            user={rankedUsers[1]} 
-                            position={2} 
-                            followerCount={rankedUsers[1].followerCount} 
-                            onClick={handleUserClick} 
-                        />
-                        <PodiumItem 
-                            user={rankedUsers[0]} 
-                            position={1} 
-                            followerCount={rankedUsers[0].followerCount} 
-                            onClick={handleUserClick} 
-                        />
-                        <PodiumItem 
-                            user={rankedUsers[2]} 
-                            position={3} 
-                            followerCount={rankedUsers[2].followerCount} 
-                            onClick={handleUserClick} 
-                        />
+                        {/* O Pódio é reordenado aqui para a exibição visual correta (2º, 1º, 3º) */}
+                        <PodiumItem user={topThree[1]} position={2} onClick={handleUserClick} />
+                        <PodiumItem user={topThree[0]} position={1} onClick={handleUserClick} />
+                        <PodiumItem user={topThree[2]} position={3} onClick={handleUserClick} />
                     </div>
                 )}
 
                 <div className="rank-list">
-                    {rankedUsers.slice(rankedUsers.length >= 3 ? 3 : 0).map((user, index) => {
-                        const realIndex = rankedUsers.length >= 3 ? index + 4 : index + 1;
+                    {/* Se não houver um pódio completo, exibe a lista a partir do início */}
+                    {(topThree.length < 3 ? rankedUsers : leaderboardList).map((user, index) => {
+                        // O rank precisa ser calculado com base na lista que está sendo usada
+                        const rank = topThree.length < 3 ? index + 1 : index + 4;
                         return (
                             <LeaderboardListItem 
-                                key={user.email}
+                                key={user.id}
                                 user={user}
-                                rank={realIndex}
-                                followerCount={user.followerCount}
+                                rank={rank}
                                 onClick={handleUserClick}
                             />
                         );
                     })}
                 </div>
 
-                {rankedUsers.length === 0 && (
+                {rankedUsers.length === 0 && !loading && (
                     <div className="empty-state">
                         <i className="fa-solid fa-trophy text-4xl mb-2 opacity-30"></i>
                         <p>Nenhum usuário no ranking ainda.</p>
