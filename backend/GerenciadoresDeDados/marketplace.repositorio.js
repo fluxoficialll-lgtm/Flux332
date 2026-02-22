@@ -1,6 +1,6 @@
 
 import { pool } from '../database/pool.js';
-import { gerarId, ID_PREFIX } from '../ServiçosBackEnd/FabricaDeIDS.js';
+import { gerarId } from '../ServiçosBackEnd/FabricaDeIDS.js';
 
 const toItemObject = (row) => {
     if (!row) return null;
@@ -25,7 +25,7 @@ export const marketplaceRepositorio = {
     async create(itemData) {
         const { sellerId, name, description, priceInCents, category, condition, images, location } = itemData;
         // CORREÇÃO: O repositório deve ser sempre responsável por gerar o ID.
-        const id = gerarId(ID_PREFIX.ITEM_DO_MARKETPLACE);
+        const id = gerarId();
         const query = `
             INSERT INTO marketplace_items (id, seller_id, name, description, price_in_cents, category, condition, images, location, status)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'available')

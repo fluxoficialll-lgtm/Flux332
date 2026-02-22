@@ -1,6 +1,6 @@
 
 import { pool } from '../database/pool.js';
-import { gerarId, ID_PREFIX } from '../ServiçosBackEnd/FabricaDeIDS.js';
+import { gerarId } from '../ServiçosBackEnd/FabricaDeIDS.js';
 
 // Mapeia uma linha do banco de dados para um objeto de post mais limpo
 const toPostObject = (row) => {
@@ -59,7 +59,7 @@ export const postRepositorio = {
     async create(postData) {
         const { authorId, parentPostId, content, mediaUrl } = postData;
         // CORREÇÃO: Gerar o ID do post dentro do repositório.
-        const newPostId = gerarId(ID_PREFIX.POST);
+        const newPostId = gerarId();
 
         const query = 'INSERT INTO posts (id, author_id, parent_post_id, content, media_url) VALUES ($1, $2, $3, $4, $5) RETURNING *';
         const res = await pool.query(query, [newPostId, authorId, parentPostId, content, mediaUrl]);
@@ -82,7 +82,7 @@ export const postRepositorio = {
      */
     async addComment(postId, commentData) {
         const { authorId, content } = commentData;
-        const commentId = gerarId(ID_PREFIX.COMENTARIO);
+        const commentId = gerarId();
 
         const query = 'INSERT INTO comments (id, post_id, author_id, content) VALUES ($1, $2, $3, $4) RETURNING *';
         const res = await pool.query(query, [commentId, postId, authorId, content]);

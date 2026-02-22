@@ -3,7 +3,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { authRepositorio } from '../GerenciadoresDeDados/auth.repositorio.js';
-import { gerarId, ID_PREFIX } from '../ServiçosBackEnd/FabricaDeIDS.js';
+import { gerarId } from '../ServiçosBackEnd/FabricaDeIDS.js';
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.post('/register', async (req, res) => {
             return res.status(409).json({ message: 'O nome de usuário já está em uso.' });
         }
 
-        const novoUsuarioId = gerarId(ID_PREFIX.USUARIO);
+        const novoUsuarioId = gerarId(); // Gera um UUID puro
         const passwordHash = password ? await bcrypt.hash(password, 10) : null;
 
         const newUser = { id: novoUsuarioId, name, username, email, passwordHash, googleId };
@@ -76,7 +76,7 @@ router.post('/auth/google', async (req, res) => {
                 user.googleId = googleId;
                 await authRepositorio.update(user); // Vincula o Google ID
             } else {
-                const novoUsuarioId = gerarId(ID_PREFIX.USUARIO);
+                const novoUsuarioId = gerarId(); // Gera um UUID puro
                 const username = email.split('@')[0];
                 
                 const newUser = { id: novoUsuarioId, googleId, email, name, username, passwordHash: null };

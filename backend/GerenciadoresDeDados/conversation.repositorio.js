@@ -1,6 +1,6 @@
 
 import { pool } from '../database/pool.js';
-import { gerarId, ID_PREFIX } from '../ServiçosBackEnd/FabricaDeIDS.js';
+import { gerarId } from '../ServiçosBackEnd/FabricaDeIDS.js';
 
 const toConversationObject = (row) => {
     if (!row) return null;
@@ -39,7 +39,7 @@ export const conversationRepositorio = {
         }
 
         // 2. Se não existir, criar uma nova
-        const conversationId = gerarId(ID_PREFIX.CONVERSA);
+        const conversationId = gerarId(); // Gera um UUID puro
         await pool.query('BEGIN');
         try {
             query = 'INSERT INTO conversations (id, conversation_type) VALUES ($1, \'private\') RETURNING *';

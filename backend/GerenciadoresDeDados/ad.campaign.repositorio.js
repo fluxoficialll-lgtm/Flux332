@@ -1,6 +1,6 @@
 
 import { pool } from '../database/pool.js';
-import { gerarId, ID_PREFIX } from '../ServiçosBackEnd/FabricaDeIDS.js';
+import { gerarId } from '../ServiçosBackEnd/FabricaDeIDS.js';
 
 const toCampaignObject = (row) => {
     if (!row) return null;
@@ -23,7 +23,7 @@ const toCampaignObject = (row) => {
 export const adCampaignRepositorio = {
     async create(campaignData) {
         const { ownerId, name, totalBudget, creatives, targeting, startDate, endDate, status } = campaignData;
-        const id = gerarId(ID_PREFIX.CAMPANHA_DE_ANUNCIO);
+        const id = gerarId();
         const budgetInCents = totalBudget * 100; // Calcular centavos uma vez
 
         const query = `

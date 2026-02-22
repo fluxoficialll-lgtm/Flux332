@@ -1,6 +1,6 @@
 
 import { pool } from '../database/pool.js';
-import { gerarId, ID_PREFIX } from '../ServiçosBackEnd/FabricaDeIDS.js';
+import { gerarId } from '../ServiçosBackEnd/FabricaDeIDS.js';
 
 const toGroupObject = (row) => {
     if (!row) return null;
@@ -28,7 +28,7 @@ export const groupRepositorio = {
 
     async create(groupData) {
         const { creatorId, name, description, groupType } = groupData;
-        const id = gerarId(ID_PREFIX.GRUPO);
+        const id = gerarId(); // Gera um UUID puro
         const query = 'INSERT INTO groups (id, creator_id, name, description, group_type) VALUES ($1, $2, $3, $4, $5) RETURNING *';
         const res = await pool.query(query, [id, creatorId, name, description, groupType]);
         return toGroupObject(res.rows[0]);

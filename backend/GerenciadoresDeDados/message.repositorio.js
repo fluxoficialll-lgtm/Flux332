@@ -1,6 +1,6 @@
 
 import { pool } from '../database/pool.js';
-import { gerarId, ID_PREFIX } from '../ServiçosBackEnd/FabricaDeIDS.js';
+import { gerarId } from '../ServiçosBackEnd/FabricaDeIDS.js';
 import { conversationRepositorio } from './conversation.repositorio.js';
 
 const toMessageObject = (row) => {
@@ -10,93 +10,68 @@ const toMessageObject = (row) => {
         conversationId: row.conversation_id,
         senderId: row.sender_id,
         content: row.content,
-        isEdited: row.is_edited,
         createdAt: row.created_at,
-        deletedBy: row.deleted_by,
-        // Campos do join com a tabela users
-        sender: {
-            name: row.sender_name,
-            profilePictureUrl: row.sender_profile_picture_url
-        }
+        readAt: row.read_at,
     };
 };
 
 export const messageRepositorio = {
-
     /**
      * Cria uma nova mensagem em uma conversa.
+     * Atualiza o timestamp da última mensagem na conversa.
+     * @param {string} conversationId - O ID da conversa.
+     * @param {string} senderId - O ID do remetente.
+     * @param {string} content - O conteúdo da mensagem.
+     * @returns {Promise<object>} O objeto da mensagem criada.
      */
-    async create(senderId, conversationId, content) {
-        await pool.query('BEGIN');
-        try {
-            const messageId = gerarId(ID_PREFIX.MENSAGEM);
-            const query = 'INSERT INTO messages (id, conversation_id, sender_id, content) VALUES ($1, $2, $3, $4) RETURNING *';
-            const res = await pool.query(query, [messageId, conversationId, senderId, content]);
-            
-            // Atualiza o timestamp da conversa para refletir a nova atividade
-            await conversationRepositorio.updateLastMessageAt(conversationId);
-
-            await pool.query('COMMIT');
-            const newMessage = await this.findById(messageId); // Busca para incluir dados do sender
-            return newMessage;
-
-        } catch (e) {
-            await pool.query('ROLLBACK');
-            throw e;
-        }
-    },
-
-    /**
-     * Busca uma mensagem pelo seu ID, incluindo informações do remetente.
-     */
-    async findById(id) {
-        const query = `
-            SELECT m.*, u.name as sender_name, u.profile_picture_url as sender_profile_picture_url
-            FROM messages m
-            JOIN users u ON m.sender_id = u.id
-            WHERE m.id = $1
+    async create(conversationId, senderId, content) {
+        const messageId = gerarId();
+        const insertQuery = `
+            INSERT INTO messages (id, conversation_id, sender_id, content)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *;
         `;
-        const res = await pool.query(query, [id]);
-        return toMessageObject(res.rows[0]);
+
+        // Executa a inserção da mensagem e a atualização da conversa em paralelo
+        const [messageRes] = await Promise.all([
+            pool.query(insertQuery, [messageId, conversationId, senderId, content]),
+            conversationRepositorio.updateLastMessage(conversationId)
+        ]);
+        
+        return toMessageObject(messageRes.rows[0]);
     },
 
     /**
-     * Busca todas as mensagens de uma conversa com paginação.
+     * Busca todas as mensagens de uma conversa específica, com paginação.
+     * @param {string} conversationId - O ID da conversa.
+     * @param {object} options - Opções de paginação.
+     * @param {number} [options.limit=100] - O número de mensagens a serem retornadas.
+     * @param {number} [options.offset=0] - O deslocamento para a paginação.
+     * @returns {Promise<object[]>} Uma lista de mensagens.
      */
-    async findByConversationId(conversationId, userId, limit = 50, offset = 0) {
+    async listByConversation(conversationId, { limit = 100, offset = 0 } = {}) {
         const query = `
-            SELECT m.*, u.name as sender_name, u.profile_picture_url as sender_profile_picture_url
-            FROM messages m
-            JOIN users u ON m.sender_id = u.id
-            WHERE m.conversation_id = $1 
-              -- Filtra mensagens que o usuário não tenha deletado para si
-              AND NOT(m.deleted_by @> jsonb_build_array($2::text))
-            ORDER BY m.created_at DESC
-            LIMIT $3 OFFSET $4
+            SELECT * FROM messages
+            WHERE conversation_id = $1
+            ORDER BY created_at DESC
+            LIMIT $2 OFFSET $3;
         `;
-        const res = await pool.query(query, [conversationId, userId, limit, offset]);
-        // Retorna em ordem cronológica (mais antigas primeiro)
-        return res.rows.map(toMessageObject).reverse();
+        const res = await pool.query(query, [conversationId, limit, offset]);
+        return res.rows.map(toMessageObject);
     },
-    
+
     /**
-     * Marca mensagens como deletadas para um usuário ou para todos.
+     * Marca mensagens como lidas em uma conversa para um usuário específico.
+     * @param {string} conversationId - O ID da conversa.
+     * @param {string} userId - O ID do usuário que leu as mensagens.
+     * @returns {Promise<void>}
      */
-    async deleteMessages(messageIds, userId, targetAll) {
-        if (targetAll) {
-            // Exclusão física para todos
-            const query = 'DELETE FROM messages WHERE id = ANY($1::varchar[])';
-            await pool.query(query, [messageIds]);
-        } else {
-            // Exclusão lógica (soft delete) para o usuário que solicitou
-            const query = `
-                UPDATE messages
-                SET deleted_by = deleted_by || jsonb_build_array($1::text)
-                WHERE id = ANY($2::varchar[])
-                  -- Garante que o ID não seja adicionado duas vezes
-                  AND NOT(deleted_by @> jsonb_build_array($1::text));
-            `;
-            await pool.query(query, [userId, messageIds]);
-        }
+    async markAsRead(conversationId, userId) {
+        const query = `
+            UPDATE messages
+            SET read_at = CURRENT_TIMESTAMP
+            WHERE conversation_id = $1 AND sender_id != $2 AND read_at IS NULL;
+        `;
+        await pool.query(query, [conversationId, userId]);
     }
 };

@@ -1,6 +1,6 @@
 
 import { pool } from '../database/pool.js';
-import { gerarId, ID_PREFIX } from '../ServiçosBackEnd/FabricaDeIDS.js';
+import { gerarId } from '../ServiçosBackEnd/FabricaDeIDS.js';
 
 const toTransactionObject = (row) => {
     if (!row) return null;
@@ -34,7 +34,7 @@ export const financialRepositorio = {
 
         // CORREÇÃO: Gerar um novo ID de transação (UUID) de forma explícita.
         // Isso garante que nunca usaremos um ID externo na chave primária.
-        const newTransactionId = gerarId(ID_PREFIX.TRANSACAO);
+        const newTransactionId = gerarId();
 
         const query = `
             INSERT INTO transactions (
