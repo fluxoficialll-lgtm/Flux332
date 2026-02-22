@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { authService } from '../ServiçosDoFrontend/ServiçosDeAutenticacao/authService';
@@ -7,21 +6,18 @@ import { trackingService } from '../ServiçosDoFrontend/trackingService';
 export const useLogin = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true); // Começa como true
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState('');
     const [showEmailForm, setShowEmailForm] = useState(false);
 
-    // State para login com email
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    // Efeito para capturar parâmetros de URL (afiliados, etc.)
     useEffect(() => {
         trackingService.captureUrlParams();
     }, [location]);
 
-    // Função de redirecionamento centralizada
     const handleRedirect = useCallback((user: any, isNewUser: boolean = false) => {
         setProcessing(false);
         if (isNewUser || (user && !user.isProfileCompleted)) {
@@ -37,17 +33,19 @@ export const useLogin = () => {
         }
     }, [navigate, location]);
 
-    // Efeito para verificar se o usuário já está logado ao carregar a página
+    // Efeito APENAS para o lado do cliente
     useEffect(() => {
-        const user = authService.getCurrentUser();
-        if (user && authService.isAuthenticated()) {
-            handleRedirect(user);
-        } else {
-            setLoading(false);
+        // Só executa no navegador
+        if (typeof window !== 'undefined') {
+            const user = authService.getCurrentUser();
+            if (user && authService.isAuthenticated()) {
+                handleRedirect(user);
+            } else {
+                setLoading(false); // Para de carregar se não estiver autenticado
+            }
         }
-    }, [handleRedirect]);
+    }, [handleRedirect]); // handleRedirect é estável
 
-    // Manipulador para o sucesso do login com Google
     const handleGoogleSuccess = useCallback(async (credentialResponse: any) => {
         setProcessing(true);
         setError('');
@@ -67,7 +65,6 @@ export const useLogin = () => {
         }
     }, [handleRedirect]);
 
-    // Manipulador para o login com email e senha
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email || !password || processing) return;
